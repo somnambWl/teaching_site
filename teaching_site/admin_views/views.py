@@ -142,20 +142,18 @@ class QuestionView(BaseView):
             )
 
     def on_model_change(self, form, Question):
+        msg = '"answer command" and "correct/wrong options" conflict'
         if form.answer_command.data is not None:
-            if form.correct_variable.data is not None:
-                flash('"answer command" and "correct options" conflict')
-                Question.correct_option = None
-                Question.wrong_option = None
-                Question.answer_command = None
-            if form.wrong_variable.data is not None:
-                flash('"answer command" and "wrong options" conflict')
+            if form.correct_variable.data is not None\
+            or form.wrong_variable.data is not None:
+                flash(msg)
                 Question.correct_option = None
                 Question.wrong_option = None
                 Question.answer_command = None
         else:
             if form.correct_variable.data is None\
             or form.wrong_variable.data is None:
+                flash(msg)
                 Question.correct_option = None
                 Question.wrong_option = None
                 Question.answer_command = None
