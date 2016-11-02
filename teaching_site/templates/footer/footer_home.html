@@ -1,0 +1,11 @@
+{% include 'footer/footer.html' %}
+{% if session.get('is_admin') %}
+- <a href="/admin/user">Admin</a>
+{% endif %}
+{% if session.get('username') %}
+- <a href="{{ url_for('index') }}">Home</a>
+- <a href="{{ url_for('logout') }}">Logout</a>
+- <a href="{{ url_for('user_setting') }}">Setting</a>
+{% else %}
+- <a href="{{ url_for('login') }}">Login</a>
+{% endif %}

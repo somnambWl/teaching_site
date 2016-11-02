@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %} - Validate{% endblock %}
+{% block content %}
+<h3>Email validation</h3>
+
+{% include '_errormessages.html' %}
+{% include '_flashmessages.html' %}
+
+<h4>User Data</h4>
+<ul>
+    <li>Full name: {{ user.fullname }}</li>
+    <li>username: {{ user.username }}</li>
+    <li>email: {{ user.email }}</li>
+    <a href="{{ url_for('register') }}">Not correct and earase all?</a>
+</ul>
+{% from "_formhelper.html" import render_field %}
+<form method="POST" action="{{ url_for('validate') }}" role="form">
+    
+    {{ form.hidden_tag() }}
+    {{ render_field(form.validation_code, class='form-control') }}
+    <button type="submit" class="btn btn-default" value="validate">
+        Validate
+    </button>
+    
+</form>
+
+{% endblock %}
+
+{% block footer %}
+{% include 'footer/footer_validate.html' %}
+{% endblock %}

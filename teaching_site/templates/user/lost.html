@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %} - Lost{% endblock %}
+{% block content %}
+<h3>Lost Password</h3>
+
+{% include '_errormessages.html' %}
+{% include '_flashmessages.html' %}
+
+{% from "_formhelper.html" import render_field %}
+<form method="POST" action="{{ url_for('lost_password') }}" role="form">
+    
+    {{ form.hidden_tag() }}
+    {{ render_field(form.email, class='form-control') }}
+    <button type="submit" class="btn btn-default" value="validate">
+        Reset password
+    </button>
+    
+</form>
+
+{% endblock %}
+
+{% block footer %}
+{% include 'footer/footer_lost.html' %}
+{% endblock %}

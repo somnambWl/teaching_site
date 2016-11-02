@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-AU-Compatible" content="IE=edge">
+    <meta name="viewpoint" content="width=device-width, initial-scale=1">
+    <title>
+      PCHEM{% block title %}{% endblock %}
+    </title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Bootstrap -->
+    <!-- directly include from Bootstrap cdn -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MathJax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+  </head>
+
+  <body>
+    <div class="container" style="padding-top: 20px";>
+      <h3>Score of every one</h3>
+      {{data|safe}}
+      <div class="row">
+        <div class="col-md-offset-3 col-md-6">
+          <hr>
+          <footer>
+            {% include "footer/footer_home.html" %}
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous">
+     </script>
+     <!-- Bootstrap JS -->
+     <!-- directly include from Bootstrap cdn -->
+     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>
+
+
+

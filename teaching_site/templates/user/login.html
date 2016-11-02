@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}- Login{% endblock %}
+
+{% block content %}
+
+<h3>User Login</h3>
+
+{% include '_errormessages.html'%}
+{% include '_flashmessages.html'%}
+
+{% from "_formhelper.html" import render_field %}
+<form method="POST" action="{{ url_for('login') }}" role="form">
+
+    {{ form.hidden_tag() }}
+    {{ render_field(form.username, class='form-control') }}
+    {{ render_field(form.password, class='form-control') }}
+    
+    <button type="submit" class="btn btn-default" value="login">
+        Login
+    </button>
+</form>
+<!--
+<a href="{{ url_for('register') }}">Register</a> | 
+<a href="{{ url_for('lost_password') }}">Lost your password</a>
+-->
+{% endblock %}
+
+{% block footer %}
+{% include "footer/footer_login.html" %}
+{% endblock %}

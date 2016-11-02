@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %} - Profile{% endblock %}
+
+{% block content %}
+<h3>Profile for: {{ user.username }}</h3>
+<h4>Exercise summary</h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Exercise (click to practice)</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% set itr = 0 %}
+    {% for exercise in exercises %}
+    <tr>
+      <td>
+        <a href="{{url_for('exercise', id=exercise.id, seed=seed)}}">
+          {{ exercise.name }}
+        </a>
+      </td>
+      <td>
+        {{results[itr]}}%
+      </td>
+    </tr>
+    {% set itr = itr + 1%}
+    {% endfor %}
+    <tr>
+      <td>
+        Total average
+      </td>
+      <td>
+        {{total}}%
+      </td>
+    <tr>
+  </tbody>
+</table>
+{% if user.is_admin %}
+<hr>
+<h3>Admin Section</h3>
+<a href="{{url_for('score')}}">Results of everyone</a> 
+{% endif %}
+{% endblock %}
+
+{% block footer %}
+{% include "footer/footer_home.html" %}
+{% endblock %}

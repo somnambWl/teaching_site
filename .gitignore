@@ -1,0 +1,8 @@
+**.log
+**.pyc
+**.db
+**.swp
+**.back
+.RESET_EVERYTHING.sh
+**/migrations
+**/data/*
