@@ -114,13 +114,9 @@ class QuestionView(BaseView):
 
     def _get_list(self):
         if self._query_id is not None:
-            question = self.session.query(self.model).filter_by(
-                id = self._query_id
-            ).first()
-
+            id = self._query_id
             _list = self.session.query(Variable).filter(
-                (Variable.question_id==question.id \
-                ) | \
+                (Variable.question_id==id) | \
                 ((Variable.question==None) &\
                  (Variable.correct_question==None) &\
                  (Variable.wrong_question==None))
@@ -138,8 +134,7 @@ class QuestionView(BaseView):
             return self.session.query(Variable).filter(
                 ((Variable.question==None) &\
                  (Variable.correct_question==None) &\
-                 (Variable.wrong_question==None))
-            )
+                 (Variable.wrong_question==None)))
 
     def on_model_change(self, form, Question):
         msg = '"answer command" and "correct/wrong options" conflict'
