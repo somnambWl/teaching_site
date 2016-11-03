@@ -54,7 +54,8 @@ def profile():
         if points > 0:
             total += points
         results.append(max(round(points, 3), 0))
-    total /= float(len(exercises))
+    if len(exercises) > 0:
+        total /= float(len(exercises))
     seed = randint(1, 10000)
     kwargs = {
         'user': user, 
