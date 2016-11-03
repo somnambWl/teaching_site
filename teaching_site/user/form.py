@@ -16,7 +16,7 @@ class RegisterForm(Form):
         validators.Length(min=4, max=25),
         validators.Regexp(
             r'^[\w.@+-]+$', 
-            message="Allowed charators are: Alphanumerics, '.', '@', '+', '-'"),
+            message="Allowed charaters are: Alphanumerics, '.', '@', '+', '-'"),
     ])
     password = PasswordField('New password', [
         validators.Required(),
