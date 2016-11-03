@@ -79,7 +79,7 @@ def exercise(id=None, seed=None):
 
     now = datetime.now()
     practice = False
-    if seed:
+    if seed and seed != user.random_seed:
         if now > exercise.close_date or user.is_admin:
             practice = True
             kwargs['readonly'] = False
@@ -93,6 +93,8 @@ def exercise(id=None, seed=None):
     points = []
     ans_msgs = []
     for i in range(len(exercise.questions)):
+        ans_msg = ''
+        status= ''
 
         sheet = Sheet.query.filter_by(
             user_id = user.id,
@@ -111,6 +113,7 @@ def exercise(id=None, seed=None):
                 flash('Last edit on %s'\
                       % last_edit.strftime("%Y/%m/%d, %H:%M"))
                 last_edited = False
+                
 
         name = 'form%d' % i
         form = QuestionForm(
@@ -148,6 +151,35 @@ def exercise(id=None, seed=None):
                             flash('Answers has been saved on %s' % \
                                 edit_time.strftime("%Y/%m/%d, %H:%M"))
                             flashed = True
+                        if sheet.number is not None:
+                            ans_msg = "Your answer %e was saved." \
+                                % (sheet.number)
+                            status = 'text-info'
+                        elif sheet.option1 or sheet.option2 \
+                        or sheet.option3 or sheet.option4 \
+                        or sheet.option5:
+                            mask = np.array([
+                                sheet.option1,
+                                sheet.option2,
+                                sheet.option3,
+                                sheet.option4,
+                                sheet.option5,
+                            ])
+                            for m in range(len(mask)):
+                                if mask[m] is None:
+                                    mask[m] = False
+                             
+                            choice = np.ma.masked_array(
+                                np.arange(1,6), ~mask)
+                            n_options = len(
+                                exercise.questions[i].render(seed)[1])
+                            tried = np.array([
+                                c for c in choice[:n_options] if c])
+                            tried = tried.tolist()
+                            ans_msg = "Your choice option:"
+                            ans_msg += str(tried)
+                            ans_msg += " was saved."
+                            status = 'text-info'
                 else:
                     if not flashed:
                         flash('Practice result will not be saved')
@@ -225,8 +257,6 @@ def exercise(id=None, seed=None):
                             ans_msg += " Negative points to balence expectation value."
 
             ans_msg += " You've got %4.2f point." % (round(point, 3))
-            status_list.append(status)
-            ans_msgs.append(ans_msg)
             points.append(round(point, 3))
 
             sheet.point = point
@@ -251,6 +281,8 @@ def exercise(id=None, seed=None):
                        + "it is set to be open on %s"\
                        % exercise.open_date.strftime("%Y/%m/%d, %H:%M")
                flashed = True
+        status_list.append(status)
+        ans_msgs.append(ans_msg)
     kwargs['status_list'] = status_list
     kwargs['points'] = points
     kwargs['ans_msgs'] = ans_msgs

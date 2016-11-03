@@ -32,7 +32,7 @@ class Exercise(db.Model):
 
 class Sheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.Numeric)
+    number = db.Column(db.Float)
     option1 = db.Column(db.Boolean, default=False)
     option2 = db.Column(db.Boolean, default=False)
     option3 = db.Column(db.Boolean, default=False)
