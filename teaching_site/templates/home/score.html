@@ -21,9 +21,14 @@
   <body>
     <div class="container" style="padding-top: 20px";>
       <h3>Score of every one</h3>
+      {% if data %}
       {{data|safe}}
+      {% endif %}
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
+          {% if not data %}
+          <h4>No exercise results available</h4>
+          {% endif %}
           <hr>
           <footer>
             {% include "footer/footer_home.html" %}

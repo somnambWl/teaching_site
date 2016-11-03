@@ -81,18 +81,20 @@ def score():
         ('Exercise %02d' % (i+1), 'float32') \
         for i in range(len(exercises))
     ]
-    score = np.zeros(len(index), dtype=dtype)
-    for u in range(len(users)):
-        user = users[u]
-        for e in range(len(exercises)):
-            exercise = exercises[e]
-            sheets = Sheet.query.filter_by(
-                user_id = user.id,
-                exercise_id = exercise.id
-            ) 
-            score[u][e] = np.array([
-                float(s.point) 
-                for s in sheets if s.point is not None
-            ]).sum() / float(len(exercise.questions))
-    data = pd.DataFrame(score, index = index)
-    return render_template('home/score.html', data = data.to_html())
+    kwargs = {}
+    if dtype:
+        score = np.zeros(len(index), dtype=dtype)
+        for u in range(len(users)):
+            user = users[u]
+            for e in range(len(exercises)):
+                exercise = exercises[e]
+                sheets = Sheet.query.filter_by(
+                    user_id = user.id,
+                    exercise_id = exercise.id
+                ) 
+                score[u][e] = np.array([
+                    float(s.point) 
+                    for s in sheets if s.point is not None
+                ]).sum() / float(len(exercise.questions))
+        kwargs['data'] = pd.DataFrame(score, index = index).to_html()
+    return render_template('home/score.html', **kwargs)
