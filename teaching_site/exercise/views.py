@@ -21,16 +21,18 @@ def render(id, seed=None):
         name = render_name,
     ).first()
     if exercise:
-      db.session.delete(exercise)
-      db.session.commit()
-    exercise = Exercise(
-        name = render_name,
-        open_date = datetime.today() - relativedelta(months=1),
-        close_date = datetime.today() + relativedelta(months=1),
-        active = False,
-        questions = [question]
-    )
-    db.session.add(exercise)
+        setattr(exercise, 'open_date', datetime.today() - relativedelta(months=1)),
+        setattr(exercise, 'close_date', datetime.today() + relativedelta(months=1)),
+        setattr(exercise, 'questions', [question])
+    else:
+        exercise = Exercise(
+            name = render_name,
+            open_date = datetime.today() - relativedelta(months=1),
+            close_date = datetime.today() + relativedelta(months=1),
+            active = False,
+            questions = [question]
+        )
+        db.session.add(exercise)
     db.session.commit()
     if seed is None:
         user = User.query.filter_by(
@@ -79,7 +81,7 @@ def exercise(id=None, seed=None):
 
     now = datetime.now()
     practice = False
-    if seed and seed != user.random_seed:
+    if seed and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
             practice = True
             kwargs['readonly'] = False
