@@ -115,6 +115,9 @@ class QuestionView(BaseView):
     def _get_list(self):
         if self._query_id is not None:
             id = self._query_id
+            question = self.session.query(Question).filter(
+                Question.id == id
+            ).first()
             _list = self.session.query(Variable).filter(
                 (Variable.question_id==id) | \
                 ((Variable.question==None) &\
