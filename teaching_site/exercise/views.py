@@ -81,6 +81,10 @@ def exercise(id=None, seed=None):
 
     now = datetime.now()
     practice = False
+
+    if seed is None:
+        seed = user.random_seed
+
     if seed and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
             practice = True
