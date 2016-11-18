@@ -262,7 +262,7 @@ class Variable(db.Model):
     # dict string for dependent variable value: 
     # "{'val1_var1': [value1, value2, value3], 
     #   'val2_var1: (min, max)'
-    constraint = db.Column(db.String(200))
+    constraint = db.Column(db.Text)
 
     def __init__(self,
         name = '',
@@ -384,7 +384,7 @@ question_unit_text = db.Table(
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
+    name = db.Column(db.String(100), nullable=False)
     body = db.Column(db.Text, nullable=False)
     answer_command = db.Column(db.Text)
     # relationship with question
