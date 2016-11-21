@@ -107,18 +107,21 @@ def exercise(id=None, seed=None):
             exercise_id = exercise.id,
             question_id = exercise.questions[i].id
         ).first()
-        if not sheet:
+        if not sheet and not exercise.questions[i].no_answer:
             sheet = Sheet(
                 user_id = user.id,
                 exercise_id = exercise.id,
                 question_id = exercise.questions[i].id
             )
         else:
-            if last_edited:
-                last_edit = sheet.edit_date
-                flash('Last edit on %s'\
-                      % last_edit.strftime("%Y/%m/%d, %H:%M"))
-                last_edited = False
+            try:
+                if last_edited:
+                    last_edit = sheet.edit_date
+                    flash('Last edit on %s'\
+                          % last_edit.strftime("%Y/%m/%d, %H:%M"))
+                    last_edited = False
+            except:
+                pass
                 
 
         name = 'form%d' % i
@@ -194,78 +197,81 @@ def exercise(id=None, seed=None):
             point = 0.0
             status = 'text-danger'
             answer =  exercise.questions[i].evaluate(seed)
-            if type(answer) is float:
-                if sheet.number:
-                    tried = float(sheet.number)
-                    if answer == 0 and abs(tried) < 1E-3:
-                        point = 1.0
-                        ans_msg = "Your answer is correct!"
-                        status = 'text-success'
-                    elif abs((tried - answer)/answer) < 0.1:
-                        point = 1.0
-                        ans_msg = "Your answer is correct!"
-                        status = 'text-success'
-                    else:
-                        ans_msg = "The correct answer is %E," % answer\
-                                  + " but you have entered %E." % tried
-                else:
-                    ans_msg = "You did not answer this question."
-            else:
-                answer = np.array(answer)
-                mask = np.array([
-                    sheet.option1,
-                    sheet.option2,
-                    sheet.option3,
-                    sheet.option4,
-                    sheet.option5,
-                ])
-                for m in range(len(mask)):
-                    if mask[m] is None:
-                        mask[m] = False
-                 
-                n_options = len(exercise.questions[i].render(seed)[1])
-                choice = np.ma.masked_array(np.arange(1,6), ~mask)
-                tried = np.array([c for c in choice[:n_options] if c])-1
-                tried = tried.tolist()
-                
-                if not (sheet.option1 or sheet.option2 \
-                or sheet.option3 or sheet.option4 or sheet.option5):
-                    point = 0
-                    ans_msg = "You did not answer this question."
-                    status = "text-danger"
-                else:
-                    corrects = 0
-                    for i in range(n_options):
-                        if i in answer and i in tried:
-                            corrects += 1
-                            point += 1./n_options
-                        elif i not in answer and i not in tried:
-                            corrects += 1
-                            point += 1./n_options
+            if not exercise.questions[i].no_answer:
+                if type(answer) is float:
+                    if sheet.number:
+                        tried = float(sheet.number)
+                        if answer == 0 and abs(tried) < 1E-3:
+                            point = 1.0
+                            ans_msg = "Your answer is correct!"
+                            status = 'text-success'
+                        elif abs((tried - answer)/answer) < 0.1:
+                            point = 1.0
+                            ans_msg = "Your answer is correct!"
+                            status = 'text-success'
                         else:
-                            point -= 1./n_options
-                    if corrects == n_options:
-                        ans_msg = "Your answer is correct!"
-                        status = 'text-success'
+                            ans_msg = "The correct answer is %E," % answer\
+                                      + " but you have entered %E." % tried
                     else:
-                        ans_msg = "The correct answer is options: %d" \
-                                  % (answer[0] + 1)
-                        for i in answer[1:]:
-                            ans_msg += ", %d" % (i + 1)
-                        ans_msg += ", but you chose options: %d" \
-                                   % (tried[0] + 1)
-                        for i in tried[1:]:
-                            ans_msg += ", %d" % (i + 1)
-                        ans_msg += '.'
-                        status = 'text-warning'
-                        if point <= 0:
-                            status = 'text-danger'
-                            ans_msg += " Negative points to balence expectation value."
+                        ans_msg = "You did not answer this question."
+                else:
+                    answer = np.array(answer)
+                    mask = np.array([
+                        sheet.option1,
+                        sheet.option2,
+                        sheet.option3,
+                        sheet.option4,
+                        sheet.option5,
+                    ])
+                    for m in range(len(mask)):
+                        if mask[m] is None:
+                            mask[m] = False
+                     
+                    n_options = len(exercise.questions[i].render(seed)[1])
+                    choice = np.ma.masked_array(np.arange(1,6), ~mask)
+                    tried = np.array([c for c in choice[:n_options] if c])-1
+                    tried = tried.tolist()
+                    
+                    if not (sheet.option1 or sheet.option2 \
+                    or sheet.option3 or sheet.option4 or sheet.option5):
+                        if not exercise.questions[i].no_answer:
+                            point = 0
+                            ans_msg = "You did not answer this question."
+                            status = "text-danger"
+                    else:
+                        corrects = 0
+                        for i in range(n_options):
+                            if i in answer and i in tried:
+                                corrects += 1
+                                point += 1./n_options
+                            elif i not in answer and i not in tried:
+                                corrects += 1
+                                point += 1./n_options
+                            else:
+                                point -= 1./n_options
+                        if corrects == n_options:
+                            ans_msg = "Your answer is correct!"
+                            status = 'text-success'
+                        else:
+                            ans_msg = "The correct answer is options: %d" \
+                                      % (answer[0] + 1)
+                            for i in answer[1:]:
+                                ans_msg += ", %d" % (i + 1)
+                            ans_msg += ", but you chose options: %d" \
+                                       % (tried[0] + 1)
+                            for i in tried[1:]:
+                                ans_msg += ", %d" % (i + 1)
+                            ans_msg += '.'
+                            status = 'text-warning'
+                            if point <= 0:
+                                status = 'text-danger'
+                                ans_msg += " Negative points to balence expectation value."
 
-            ans_msg += " You've got %4.2f point." % (round(point, 3))
-            points.append(round(point, 3))
+            if not exercise.questions[i].no_answer:
+                ans_msg += " You've got %4.2f point." % (round(point, 3))
+                points.append(round(point, 3))
 
-            sheet.point = point
+                sheet.point = point
             if not practice:
                 try:
                     db.session.commit()

@@ -22,7 +22,9 @@
     {% set point = points[itr-1] %}
     {% set form = forms[itr-1] %}
     {{ form.hidden_tag() }}
-    {% if question.render(seed)[1] %}
+    {% if question.no_answer %}
+        <label>Derivation question, no answer required</label>
+    {% elif question.render(seed)[1] %}
         {% from "_formhelper.html" import render_checkbox %}
         {% set options = question.render(seed)[1] %}
         <label>Answer:</label>

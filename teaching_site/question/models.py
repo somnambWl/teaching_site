@@ -387,6 +387,7 @@ class Question(db.Model):
     name = db.Column(db.String(100), nullable=False)
     body = db.Column(db.Text, nullable=False)
     answer_command = db.Column(db.Text)
+    no_answer = db.Column(db.Boolean, default=False)
     # relationship with question
     category_id = db.Column(
         db.Integer,

@@ -148,6 +148,10 @@ class QuestionView(BaseView):
                 Question.correct_option = None
                 Question.wrong_option = None
                 Question.answer_command = None
+        else:
+            if not form.correct_variable.data\
+            or not form.wrong_variable.data:
+                Question.no_answer = True
 
 class ExerciseView(BaseView):
     def _exercise_formatter(view, context, model, name):
