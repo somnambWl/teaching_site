@@ -15,8 +15,10 @@
 
 {% macro render_checkbox(box, options, i) %}
 {% if options[i] %}
-<label class="checkbox-inline">
-{{box(**kwargs)|safe}}{{options[i]}}
+<p>
+<label class="checkbox">
+{{box(**kwargs)|safe}}{{options[i].decode('utf-8')}}
 </label>
+</p>
 {% endif %}
 {% endmacro %}
