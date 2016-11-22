@@ -240,11 +240,11 @@ def exercise(id=None, seed=None):
                             status = "text-danger"
                     else:
                         corrects = 0
-                        for i in range(n_options):
-                            if i in answer and i in tried:
+                        for j in range(n_options):
+                            if j in answer and j in tried:
                                 corrects += 1
                                 point += 1./n_options
-                            elif i not in answer and i not in tried:
+                            elif j not in answer and j not in tried:
                                 corrects += 1
                                 point += 1./n_options
                             else:
@@ -255,12 +255,12 @@ def exercise(id=None, seed=None):
                         else:
                             ans_msg = "The correct answer is options: %d" \
                                       % (answer[0] + 1)
-                            for i in answer[1:]:
-                                ans_msg += ", %d" % (i + 1)
+                            for j in answer[1:]:
+                                ans_msg += ", %d" % (j + 1)
                             ans_msg += ", but you chose options: %d" \
                                        % (tried[0] + 1)
-                            for i in tried[1:]:
-                                ans_msg += ", %d" % (i + 1)
+                            for j in tried[1:]:
+                                ans_msg += ", %d" % (j + 1)
                             ans_msg += '.'
                             status = 'text-warning'
                             if point <= 0:
