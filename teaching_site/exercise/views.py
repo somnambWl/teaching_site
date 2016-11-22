@@ -98,20 +98,41 @@ def exercise(id=None, seed=None):
     status_list = []
     points = []
     ans_msgs = []
-    for i in range(len(exercise.questions)):
+
+    optional_list = []
+    numerical_list = []
+    no_answer_list = []
+    for q in exercise.questions:
+        answer = q.evaluate(seed)
+        if q.no_answer:
+            no_answer_list.append(q)
+        elif type(answer) is float:
+            numerical_list.append(q)
+        else:
+            optional_list.append(q)
+    question_list = optional_list
+    question_list.extend(numerical_list)
+    question_list.extend(no_answer_list)
+    print [q.body for q in question_list]
+
+    for i in range(len(question_list)):
+
+        question = question_list[i]
+        print question.id
+
         ans_msg = ''
         status= ''
 
         sheet = Sheet.query.filter_by(
             user_id = user.id,
             exercise_id = exercise.id,
-            question_id = exercise.questions[i].id
+            question_id = question.id
         ).first()
-        if not sheet and not exercise.questions[i].no_answer:
+        if not sheet and not question.no_answer:
             sheet = Sheet(
                 user_id = user.id,
                 exercise_id = exercise.id,
-                question_id = exercise.questions[i].id
+                question_id = question.id
             )
         else:
             try:
@@ -127,7 +148,7 @@ def exercise(id=None, seed=None):
         name = 'form%d' % i
         form = QuestionForm(
             exercise_id = exercise.id,
-            question_id = exercise.questions[i].id,
+            question_id = question.id,
             user_id = user.id,
             prefix = name,
             obj = sheet
@@ -136,7 +157,7 @@ def exercise(id=None, seed=None):
         if (now > exercise.open_date and now < exercise.close_date)\
         or practice:
             kwargs['readonly'] = False
-            if form.validate_on_submit() and not exercise.questions[i].no_answer:
+            if form.validate_on_submit() and not question.no_answer:
                 sheet.number = form.number.data
                 sheet.option1 = form.option1.data
                 sheet.option2 = form.option2.data
@@ -181,7 +202,7 @@ def exercise(id=None, seed=None):
                             choice = np.ma.masked_array(
                                 np.arange(1,6), ~mask)
                             n_options = len(
-                                exercise.questions[i].render(seed)[1])
+                                question.render(seed)[1])
                             tried = np.array([
                                 c for c in choice[:n_options] if c])
                             tried = tried.tolist()
@@ -196,8 +217,8 @@ def exercise(id=None, seed=None):
         if now > exercise.close_date or practice:
             point = 0.0
             status = 'text-danger'
-            answer =  exercise.questions[i].evaluate(seed)
-            if not exercise.questions[i].no_answer:
+            answer =  question.evaluate(seed)
+            if not question.no_answer:
                 if type(answer) is float:
                     if sheet.number:
                         tried = float(sheet.number)
@@ -227,14 +248,14 @@ def exercise(id=None, seed=None):
                         if mask[m] is None:
                             mask[m] = False
                      
-                    n_options = len(exercise.questions[i].render(seed)[1])
+                    n_options = len(question.render(seed)[1])
                     choice = np.ma.masked_array(np.arange(1,6), ~mask)
                     tried = np.array([c for c in choice[:n_options] if c])-1
                     tried = tried.tolist()
                     
                     if not (sheet.option1 or sheet.option2 \
                     or sheet.option3 or sheet.option4 or sheet.option5):
-                        if not exercise.questions[i].no_answer:
+                        if not question.no_answer:
                             point = 0
                             ans_msg = "You did not answer this question."
                             status = "text-danger"
@@ -267,7 +288,7 @@ def exercise(id=None, seed=None):
                                 status = 'text-danger'
                                 ans_msg += " Negative points to balence expectation value."
 
-            if not exercise.questions[i].no_answer:
+            if not question.no_answer:
                 ans_msg += " You've got %4.2f point." % (round(point, 3))
                 points.append(round(point, 3))
 
@@ -302,4 +323,5 @@ def exercise(id=None, seed=None):
     kwargs['error'] = error
     kwargs['seed'] = seed
     kwargs['practice'] = practice
+    kwargs['question_list'] = question_list
     return render_template('exercise/render.html', **kwargs)

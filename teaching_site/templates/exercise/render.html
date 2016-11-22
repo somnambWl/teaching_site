@@ -11,7 +11,7 @@
 
 <form method="POST" action="{{ url_for('exercise', id=exercise.id, seed=seed) }}" role="form">
 {% set itr = 1 %}
-{% for question in exercise.questions %}
+{% for question in question_list %}
     <hr>
     <p> <label>Question {{itr}}</label>: {{ question.name }}</p>
     <p>
@@ -23,7 +23,7 @@
     {% set form = forms[itr-1] %}
     {{ form.hidden_tag() }}
     {% if question.no_answer %}
-        <label>Derivation question, no answer required</label>
+        <label>No answer required</label>
     {% elif question.render(seed)[1] %}
         {% from "_formhelper.html" import render_checkbox %}
         {% set options = question.render(seed)[1] %}
