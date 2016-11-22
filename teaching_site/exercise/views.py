@@ -67,7 +67,7 @@ def exercise(id=None, seed=None):
         if exercise.active:
             msg +=  'This exercise is visible to user on ' + \
                     'open_date %s' %\
-                    datetime.now().strftime("%Y/%m/%d-%H:%m")
+                    exercise.open_date.strftime("%Y/%m/%d-%H:%m")
             flash(msg)
         else:
             msg += 'Not visible exercise'
