@@ -136,7 +136,7 @@ def exercise(id=None, seed=None):
         if (now > exercise.open_date and now < exercise.close_date)\
         or practice:
             kwargs['readonly'] = False
-            if form.validate_on_submit():
+            if form.validate_on_submit() and not exercise.questions[i].no_answer:
                 sheet.number = form.number.data
                 sheet.option1 = form.option1.data
                 sheet.option2 = form.option2.data
