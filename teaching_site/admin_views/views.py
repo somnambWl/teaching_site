@@ -74,7 +74,7 @@ class QuestionView(BaseView):
         )
 
     column_list = (
-        'name', 'body',
+        'name', 'body', 'no_answer'
     )
 
     column_formatters = {
@@ -87,13 +87,14 @@ class QuestionView(BaseView):
         'answer_command': 'answer command/text',
         'correct_variable': 'correct options',
         'wrong_variable': 'wrong options',
+        'no_answer': 'no answer required',
     }
     column_searchable_list = (
-        'name', 'body',
+        'name', 'body', 'no_answer'
     )
     form_rules = ('category', 'name', 'body', 'answer_command', 
         'text_variables', 'answer_units', 'correct_variable', 
-        'wrong_variable')
+        'wrong_variable', 'no_answer')
 
     def create_form(self):
         return self._filtered(
