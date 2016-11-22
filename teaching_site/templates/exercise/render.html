@@ -47,14 +47,32 @@
 {% endfor %}
 <hr>
 <div class="row">
+  {% if practice %}
   <div class='col-md-6'>
-    <button type="submit" class="btn btn-default">Save</button>
+    <button type="submit" class="btn btn-default" name='save'>Evaluate</button>
+  </div>
+  <div class='col-md-6'>
+    <p class="text-center">
+      <label>Practice page</label>
+    </p>
+  </div>
+  {% else %}
+  <div class='col-md-6'>
+    <p>
+    <button type="submit" class="btn btn-default" name='save'>Save</button>
+    For future edition
+    </p>
+    <p class=text-danger>
+    <button type="submit" class="btn btn-danger" name='submit'>Submit</button>
+    No going back
+    </p>
   </div>
   <div class='col-md-6'>
     <p class="text-center">
       <label>Deadline</label>: {{ exercise.close_date.strftime("%Y/%m/%d, %H:%M") }}
     </p>
   </div>
+  {% endif %}
 </div>
 </form>
 {% endblock %}

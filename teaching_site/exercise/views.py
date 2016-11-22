@@ -51,6 +51,8 @@ def exercise(id=None, seed=None):
     error = None
     flashed = False
     last_edited = True
+    submit = False
+    submitted = False
 
     if id is None:
         return redirect(url_for('index'))
@@ -113,12 +115,10 @@ def exercise(id=None, seed=None):
     question_list = optional_list
     question_list.extend(numerical_list)
     question_list.extend(no_answer_list)
-    print [q.body for q in question_list]
 
     for i in range(len(question_list)):
 
         question = question_list[i]
-        print question.id
 
         ans_msg = ''
         status= ''
@@ -134,6 +134,11 @@ def exercise(id=None, seed=None):
                 exercise_id = exercise.id,
                 question_id = question.id
             )
+        if not question.no_answer:
+            if sheet.point is not None:
+                submitted = True
+                if now < exercise.close_date:
+                    kwargs['readonly'] = True
         else:
             try:
                 if last_edited:
@@ -143,7 +148,6 @@ def exercise(id=None, seed=None):
                     last_edited = False
             except:
                 pass
-                
 
         name = 'form%d' % i
         form = QuestionForm(
@@ -155,9 +159,12 @@ def exercise(id=None, seed=None):
         )
         forms.append(form)
         if (now > exercise.open_date and now < exercise.close_date)\
-        or practice:
-            kwargs['readonly'] = False
+        and not submitted or practice:
+            if not submitted:
+                kwargs['readonly'] = False
             if form.validate_on_submit() and not question.no_answer:
+                if 'submit' in request.form.keys():
+                    submit = True
                 sheet.number = form.number.data
                 sheet.option1 = form.option1.data
                 sheet.option2 = form.option2.data
@@ -178,8 +185,11 @@ def exercise(id=None, seed=None):
                     if sheet.id:
                         db.session.commit()
                         if not flashed:
-                            flash('Answers has been saved on %s' % \
-                                edit_time.strftime("%Y/%m/%d, %H:%M"))
+                            if not submit:
+                                flash('Answers has been saved on %s' % \
+                                    edit_time.strftime("%Y/%m/%d, %H:%M"))
+                            else: 
+                                flash('Your answer has been submitted')
                             flashed = True
                         if sheet.number is not None:
                             ans_msg = "Your answer %e was saved." \
@@ -213,8 +223,10 @@ def exercise(id=None, seed=None):
                 else:
                     if not flashed:
                         flash('Practice result will not be saved')
+                        if submit:
+                            flash('Results submitted')
                         flashed = True
-        if now > exercise.close_date or practice:
+        if now > exercise.close_date or practice or submit or submitted:
             point = 0.0
             status = 'text-danger'
             answer =  question.evaluate(seed)

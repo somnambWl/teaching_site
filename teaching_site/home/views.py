@@ -37,9 +37,16 @@ def profile():
     exercises_all = Exercise.query.all()
     exercises = []
     for i in range(len(exercises_all)):
-        if exercises_all[i].close_date < datetime.now()\
-        and exercises_all[i].active:
-            exercises.append(exercises_all[i])
+        if exercises_all[i].active:
+            if exercises_all[i].close_date < datetime.now():
+                exercises.append(exercises_all[i])
+            else:
+                sheet = Sheet.query.filter_by(
+                    exercise_id = exercises_all[i].id,
+                    user_id = user.id,
+                ).first()
+                if sheet and sheet.point is not None:
+                    exercises.append(exercises_all[i])
     results = []
     total = 0
     for exercise in exercises:
