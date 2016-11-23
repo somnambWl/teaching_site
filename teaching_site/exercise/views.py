@@ -7,6 +7,7 @@ from teaching_site.user.models import User
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
+from teaching_site.exercise.tools import evaluate
 
 @app.route('/render/<int:id>')
 @app.route('/render/<int:id>/<int:seed>')
@@ -103,6 +104,7 @@ def exercise(id=None, seed=None):
 
     optional_list = []
     numerical_list = []
+    single_choice_list = []
     no_answer_list = []
     for q in exercise.questions:
         answer = q.evaluate(seed)
@@ -110,9 +112,12 @@ def exercise(id=None, seed=None):
             no_answer_list.append(q)
         elif type(answer) is float:
             numerical_list.append(q)
+        elif len(answer) == 1:
+            single_choice_list.append(q)
         else:
             optional_list.append(q)
-    question_list = optional_list
+    question_list = single_choice_list
+    question_list.extend(optional_list)
     question_list.extend(numerical_list)
     question_list.extend(no_answer_list)
 
@@ -159,7 +164,7 @@ def exercise(id=None, seed=None):
         )
         forms.append(form)
         if (now > exercise.open_date and now < exercise.close_date)\
-        and not submitted or practice:
+        or practice and not submitted:
             if not submitted:
                 kwargs['readonly'] = False
             if form.validate_on_submit() and not question.no_answer:
@@ -227,92 +232,12 @@ def exercise(id=None, seed=None):
                             flash('Results submitted')
                         flashed = True
         if now > exercise.close_date or practice or submit or submitted:
-            point = 0.0
-            status = 'text-danger'
-            answer =  question.evaluate(seed)
             if not question.no_answer:
-                if type(answer) is float:
-                    if sheet.number:
-                        tried = float(sheet.number)
-                        if answer == 0 and abs(tried) < 1E-3:
-                            point = 1.0
-                            ans_msg = "Your answer is correct!"
-                            status = 'text-success'
-                        elif answer != 0\
-                        and abs((tried - answer)/answer) < 0.1:
-                            point = 1.0
-                            ans_msg = "Your answer is correct!"
-                            status = 'text-success'
-                        else:
-                            ans_msg = "The correct answer is %E," % answer\
-                                      + " but you have entered %E." % tried
-                    else:
-                        ans_msg = "You did not answer this question."
-                else:
-                    answer = np.array(answer)
-                    mask = np.array([
-                        sheet.option1,
-                        sheet.option2,
-                        sheet.option3,
-                        sheet.option4,
-                        sheet.option5,
-                    ])
-                    for m in range(len(mask)):
-                        if mask[m] is None:
-                            mask[m] = False
-                     
-                    n_options = len(question.render(seed)[1])
-                    choice = np.ma.masked_array(np.arange(1,6), ~mask)
-                    tried = np.array([c for c in choice[:n_options] if c])-1
-                    tried = tried.tolist()
-                    
-                    if not (sheet.option1 or sheet.option2 \
-                    or sheet.option3 or sheet.option4 or sheet.option5):
-                        if not question.no_answer:
-                            point = 0
-                            ans_msg = "You did not answer this question."
-                            status = "text-danger"
-                    else:
-                        corrects = 0
-                        for j in range(n_options):
-                            if j in answer and j in tried:
-                                corrects += 1
-                                point += 1./n_options
-                            elif j not in answer and j not in tried:
-                                corrects += 1
-                                point += 1./n_options
-                            else:
-                                point -= 1./n_options
-                        if corrects == n_options:
-                            ans_msg = "Your answer is correct!"
-                            status = 'text-success'
-                        else:
-                            ans_msg = "The correct answer is options: %d" \
-                                      % (answer[0] + 1)
-                            for j in answer[1:]:
-                                ans_msg += ", %d" % (j + 1)
-                            ans_msg += ", but you chose options: %d" \
-                                       % (tried[0] + 1)
-                            for j in tried[1:]:
-                                ans_msg += ", %d" % (j + 1)
-                            ans_msg += '.'
-                            status = 'text-warning'
-                            if point <= 0:
-                                status = 'text-danger'
-                                ans_msg += " Negative points to balence expectation value."
-
-            if not question.no_answer:
-                ans_msg += " You've got %4.2f point." % (round(point, 3))
+                point, status, ans_msg, error = \
+                    evaluate(question, sheet, seed)
                 points.append(round(point, 3))
-
-                sheet.point = point
-            if not practice:
-                try:
-                    db.session.commit()
-                except:
-                    error = "Evaluated results can not be saved, " +\
-                            " please contact course administrator."
     
+            if not practice:
                 if not flashed:
                     flash('This exercise is already closed.')
                     flashed = True
