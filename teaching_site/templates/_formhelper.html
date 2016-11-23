@@ -15,10 +15,50 @@
 
 {% macro render_checkbox(box, options, i) %}
 {% if options[i] %}
+{% if options[i] is string %}
+{% set text = options[i].decode('utf-8') %}
+{% else %}
+{% set text = options[i] %}
+{% endif %}
 <p>
 <label class="checkbox">
-{{box(**kwargs)|safe}}{{options[i].decode('utf-8')}}
+{{box(**kwargs)|safe}}{{text}}
 </label>
 </p>
 {% endif %}
+{% endmacro %}
+
+{% macro render_radio(preset, options, i, readonly, qid) %}
+ {% if options[i] %}
+
+  {% if options[i] is string %}
+   {% set text = options[i].decode('utf-8') %}
+  {% else %}
+   {% set text = options[i] %}
+  {% endif %}
+
+  {% if readonly %}
+   {% set disabled = "disabled" %}
+  {% else %}
+   {% set disabled = "" %}
+  {% endif %}
+
+  {% if preset %}
+   {% set checked = "checked" %}
+  {% else %}
+   {% set checked = "" %}
+  {% endif %}
+
+  {% set value = '%d_%d' % (qid, i) %}
+  {% set name = 'radio_%d' % qid %}
+
+  <p>
+  <label class="radio-inline">
+  <input 
+   type="radio" name="{{name}}" id="{{value}}" value="{{value}}"
+   {{disabled}} {{checked}}>
+  {{safe}}{{text}}
+  </label>
+  </p>
+ {% endif %}
 {% endmacro %}

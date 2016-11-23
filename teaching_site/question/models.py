@@ -468,14 +468,15 @@ class Question(db.Model):
         for i in range(len(self.text_variables.all())):
             var = self.text_variables[i]
             pattern = '_' + var.name + '_'
-            text = text.replace(pattern, str(var.render(seed+i)))
+            text = text.replace(pattern, 
+                str(var.render(seed+i))).decode('utf-8')
 
         if self.answer_units:
             unit_rs = np.random.RandomState(seed+1)
             unit = unit_rs.choice(self.answer_units)
             pattern = '_unit_'
             face = unit.get_face()
-            text = text.replace(pattern, face)
+            text = text.replace(pattern, face).decode('utf-8')
         
         option_list = []
         if self.correct_variable and self.wrong_variable:

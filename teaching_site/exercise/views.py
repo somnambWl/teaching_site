@@ -22,8 +22,10 @@ def render(id, seed=None):
         name = render_name,
     ).first()
     if exercise:
-        setattr(exercise, 'open_date', datetime.today() - relativedelta(months=1)),
-        setattr(exercise, 'close_date', datetime.today() + relativedelta(months=1)),
+        setattr(exercise, 'open_date', 
+            datetime.today() - relativedelta(months=1)),
+        setattr(exercise, 'close_date', 
+            datetime.today() + relativedelta(months=1)),
         setattr(exercise, 'questions', [question])
     else:
         exercise = Exercise(
@@ -114,6 +116,7 @@ def exercise(id=None, seed=None):
             numerical_list.append(q)
         elif len(answer) == 1:
             single_choice_list.append(q)
+            q._options = [False for _ in range(5)]
         else:
             optional_list.append(q)
     question_list = single_choice_list
@@ -170,12 +173,38 @@ def exercise(id=None, seed=None):
             if form.validate_on_submit() and not question.no_answer:
                 if 'submit' in request.form.keys():
                     submit = True
-                sheet.number = form.number.data
-                sheet.option1 = form.option1.data
-                sheet.option2 = form.option2.data
-                sheet.option3 = form.option3.data
-                sheet.option4 = form.option4.data
-                sheet.option5 = form.option5.data
+                answer = question.evaluate(seed)
+                if type(answer) is float:
+                    sheet.number = form.number.data
+                elif len(answer) > 1:
+                    sheet.option1 = form.option1.data
+                    sheet.option2 = form.option2.data
+                    sheet.option3 = form.option3.data
+                    sheet.option4 = form.option4.data
+                    sheet.option5 = form.option5.data
+                else:
+                    rname = 'radio_%d' % question.id
+                    try:
+                        ans = int(request.form[rname].split('_')[-1])
+                    except:
+                        ans = -1
+                    question._options = [False for _ in range(5)]
+                    sheet.option1 = False 
+                    sheet.option2 = False 
+                    sheet.option3 = False 
+                    sheet.option4 = False 
+                    sheet.option5 = False 
+                    if ans == 0:
+                        sheet.option1 = True
+                    elif ans == 1:
+                        sheet.option2 = True 
+                    elif ans == 2:
+                        sheet.option3 = True 
+                    elif ans == 3:
+                        sheet.option4 = True 
+                    elif ans == 4:
+                        sheet.option5 = True 
+                    question._options[ans] = True
                 edit_time = datetime.now()
                 sheet.edit_date = edit_time
 
@@ -192,7 +221,8 @@ def exercise(id=None, seed=None):
                         if not flashed:
                             if not submit:
                                 flash('Answers has been saved on %s' % \
-                                    edit_time.strftime("%Y/%m/%d, %H:%M"))
+                                    edit_time.strftime(
+                                        "%Y/%m/%d, %H:%M"))
                             else: 
                                 flash('Your answer has been submitted')
                             flashed = True

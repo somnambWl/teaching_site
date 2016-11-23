@@ -12,37 +12,51 @@
 <form method="POST" action="{{ url_for('exercise', id=exercise.id, seed=seed) }}" role="form">
 {% set itr = 1 %}
 {% for question in question_list %}
-    <hr>
-    <p> <label>Question {{itr}}</label>: {{ question.name }}</p>
-    <p>
-        {{ question.render(seed)[0] }}
-    </p>
-    {% set status = status_list[itr-1] %}
-    {% set ans_msg = ans_msgs[itr-1] %}
-    {% set point = points[itr-1] %}
-    {% set form = forms[itr-1] %}
-    {{ form.hidden_tag() }}
-    {% if question.no_answer %}
-        <label>No answer required</label>
-    {% elif question.render(seed)[1]|length > 0 %}
-        {% from "_formhelper.html" import render_checkbox %}
-        {% set options = question.render(seed)[1] %}
-        <label>Answer:</label>
-        <div class="form-groupt">
-        <div class="checkbox">
-        {{ render_checkbox(form.option1,options,0,disabled=readonly) }}
-        {{ render_checkbox(form.option2,options,1,disabled=readonly) }}
-        {{ render_checkbox(form.option3,options,2,disabled=readonly) }}
-        {{ render_checkbox(form.option4,options,3,disabled=readonly) }}
-        {{ render_checkbox(form.option5,options,4,disabled=readonly) }}
-        </div>
-        </div>
-    {% else %}
-        {{ render_field(form.number, class='form-control',disabled=readonly) }}
-    {% endif%}
-    {% if ans_msgs %}
-    <p class={{status}}>{{ ans_msg }}</p>
-    {% endif %}
+ <hr>
+ <p> <label>Question {{itr}}</label>: {{ question.name }}</p>
+ <p>
+  {{ question.render(seed)[0] }}
+ </p>
+ {% set status = status_list[itr-1] %}
+ {% set ans_msg = ans_msgs[itr-1] %}
+ {% set point = points[itr-1] %}
+ {% set form = forms[itr-1] %}
+ {{ form.hidden_tag() }}
+ {% if question.no_answer %}
+  <label>No answer required</label>
+ {% elif question.render(seed)[1]|length > 1 %}
+  {% if question.evaluate(seed)|length > 1 %}
+   {% from "_formhelper.html" import render_checkbox %}
+   {% set options = question.render(seed)[1] %}
+   <label>Answer:</label>
+   <div class="form-groupt">
+   <div class="checkbox">
+   {{ render_checkbox(form.option1,options,0,disabled=readonly) }}
+   {{ render_checkbox(form.option2,options,1,disabled=readonly) }}
+   {{ render_checkbox(form.option3,options,2,disabled=readonly) }}
+   {{ render_checkbox(form.option4,options,3,disabled=readonly) }}
+   {{ render_checkbox(form.option5,options,4,disabled=readonly) }}
+   </div>
+   </div>
+  {% elif question.evaluate(seed)|length == 1 %}
+   {% from "_formhelper.html" import render_radio %}
+   {% set options = question.render(seed)[1] %}
+   {% set qid = question.id %}
+   <label>Answer:</label>
+   <div class="form-groupt">
+   <div class="radio">
+   {% for o in range(5) %}
+   {{ render_radio(question._options[o], options,o, readonly, qid) }}
+   {% endfor %}
+   </div>
+   </div>
+  {% endif %}
+ {% else %}
+     {{ render_field(form.number, class='form-control',disabled=readonly) }}
+ {% endif%}
+ {% if ans_msgs %}
+ <p class={{status}}>{{ ans_msg }}</p>
+ {% endif %}
 {% set itr = itr + 1 %}
 {% endfor %}
 <hr>
