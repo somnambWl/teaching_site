@@ -239,7 +239,7 @@ def exercise(id=None, seed=None):
                             ans_msg = "Your answer is correct!"
                             status = 'text-success'
                         elif answer != 0\
-                        and abs((tried - answer)/answer) < 0.1
+                        and abs((tried - answer)/answer) < 0.1:
                             point = 1.0
                             ans_msg = "Your answer is correct!"
                             status = 'text-success'
