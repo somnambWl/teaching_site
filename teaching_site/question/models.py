@@ -463,6 +463,7 @@ class Question(db.Model):
             return self.name
 
     def render(self, seed, options=5):
+        seed = seed + self.id
         rs = np.random.RandomState(seed)
         text = self.body
         for i in range(len(self.text_variables.all())):
@@ -496,6 +497,7 @@ class Question(db.Model):
         return text, rs.permutation(option_list)
             
     def evaluate(self, seed):
+        seed = seed + self.id
         rs = np.random.RandomState(seed)
         if self.answer_command:
             answer = self.answer_command
