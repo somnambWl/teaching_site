@@ -83,8 +83,6 @@ def evaluate(question, sheet, seed):
                         ans_msg += " Negative points to "+\
                             "balence expectation value."
         else:
-            print answer
-            print tried
             if len(tried) > 0:
                 if answer[0] == tried[0]:
                     point = 1.0
