@@ -492,7 +492,7 @@ class Question(db.Model):
             option_list.extend(
                 rs.permutation(correct_list)[:options - 1]
             )
-        return text, option_list
+        return text, rs.permutation(option_list)
             
     def evaluate(self, seed):
         rs = np.random.RandomState(seed)
