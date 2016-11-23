@@ -24,7 +24,7 @@
     {{ form.hidden_tag() }}
     {% if question.no_answer %}
         <label>No answer required</label>
-    {% elif question.render(seed)[1] %}
+    {% elif question.render(seed)[1]|length > 0 %}
         {% from "_formhelper.html" import render_checkbox %}
         {% set options = question.render(seed)[1] %}
         <label>Answer:</label>
