@@ -258,3 +258,4 @@ with warnings.catch_warnings():
     admin.add_view(UnitCategoryView(UnitCategory, db.session))
 admin.add_link(MenuLink(name='Home', category='Links', url='/index'))
 admin.add_link(MenuLink(name='Logout', category='Links', url='/logout'))
+admin.add_link(MenuLink(name='Re-evaluate all', category='Links', url='/reevaluate'))

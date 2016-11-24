@@ -9,6 +9,13 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 from teaching_site.exercise.tools import evaluate
 
+@app.route('/reevaluate')
+@admin_required
+def reevaluate():
+    flash('reevaluate all exercise sheets')
+    return redirect('admin/sheet')
+    
+
 @app.route('/render/<int:id>')
 @app.route('/render/<int:id>/<int:seed>')
 @admin_required
