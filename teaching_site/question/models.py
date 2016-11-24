@@ -463,6 +463,7 @@ class Question(db.Model):
             return self.name
 
     def render(self, seed, options=5):
+        seed = seed + self.id
         rs = np.random.RandomState(seed)
         text = self.body
         for i in range(len(self.text_variables.all())):
@@ -496,16 +497,17 @@ class Question(db.Model):
         return text, rs.permutation(option_list)
             
     def evaluate(self, seed):
-        rs = np.random.RandomState(seed)
+        qseed = seed + self.id
+        rs = np.random.RandomState(qseed)
         if self.answer_command:
             answer = self.answer_command
             for i in range(len(self.text_variables.all())):
                 var = self.text_variables[i]
                 name = '_' + var.name + '_'
-                answer = answer.replace(name, str(var.value(seed+i)))
+                answer = answer.replace(name, str(var.value(qseed+i)))
             SI_answer = float(parse_expr(answer))
             if self.answer_units:
-                unit_rs = np.random.RandomState(seed+1)
+                unit_rs = np.random.RandomState(qseed+1)
                 unit = unit_rs.choice(self.answer_units)
                 SI_answer = unit.from_SI(SI_answer)
             return SI_answer
