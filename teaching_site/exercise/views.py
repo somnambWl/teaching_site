@@ -119,10 +119,31 @@ def exercise(id=None, seed=None):
             q._options = [False for _ in range(5)]
         else:
             optional_list.append(q)
+
+    qlists = [
+        single_choice_list, 
+        optional_list, 
+        numerical_list, 
+        no_answer_list,
+    ]
+    qkeys = [
+        'single', 'optional', 'numerical', 'no_answer'
+    ]
+    type_dict = {}
+    type_length = 0
+    for i in range(len(qlists)):
+        qlist = qlists[i]
+        key = qkeys[i]
+        if len(qlist) > 0:
+            type_dict[type_length] = key
+            type_length = type_length + len(qlist)
+    kwargs['type_dict'] = type_dict
+
     question_list = single_choice_list
     question_list.extend(optional_list)
     question_list.extend(numerical_list)
     question_list.extend(no_answer_list)
+    kwargs['question_list'] = question_list
 
     for i in range(len(question_list)):
 
@@ -291,5 +312,4 @@ def exercise(id=None, seed=None):
     kwargs['error'] = error
     kwargs['seed'] = seed
     kwargs['practice'] = practice
-    kwargs['question_list'] = question_list
     return render_template('exercise/render.html', **kwargs)

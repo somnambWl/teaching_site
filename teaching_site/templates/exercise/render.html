@@ -12,6 +12,28 @@
 <form method="POST" action="{{ url_for('exercise', id=exercise.id, seed=seed) }}" role="form">
 {% set itr = 1 %}
 {% for question in question_list %}
+ {% if itr-1 in type_dict %}
+  {% if type_dict[itr-1] == 'single' %}
+   <h3>Single choice question</h3>
+   <p>
+    Each of the following question contains only one correct answer. 
+    Wrong answer will get 
+    <ins class="text-danger">negative</ins> points.
+   </p>
+  {% elif type_dict[itr-1] == 'optional' %}
+   <h3>Multiple choice question</h3>
+   <p>
+    Each of the following question contains 
+    at least one correct answer. 
+    Wrong answer will get 
+    <ins class="text-danger">negative</ins> points.
+   </p>
+  {% elif type_dict[itr-1] == 'numerical' %}
+   <h3>Numerical question</h3>
+  {% elif type_dict[itr-1] == 'no_answer' %}
+   <h3>Derivation question</h3>
+  {% endif %}
+ {% endif %}
  <hr>
  <p> <label>Question {{itr}}</label>: {{ question.name }}</p>
  <p>

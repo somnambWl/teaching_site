@@ -80,8 +80,6 @@ def evaluate(question, sheet, seed):
                     status = 'text-warning'
                     if point <= 0:
                         status = 'text-danger'
-                        ans_msg += " Negative points to "+\
-                            "balence expectation value."
         else:
             if len(tried) > 0:
                 if answer[0] == tried[0]:
