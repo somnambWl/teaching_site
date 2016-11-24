@@ -14,24 +14,24 @@
 {% for question in question_list %}
  {% if itr-1 in type_dict %}
   {% if type_dict[itr-1] == 'single' %}
-   <h3>Single choice question</h3>
+   <h3>Multiple choice</h3>
    <p>
-    Each of the following question contains only one correct answer. 
-    Wrong answer will get 
-    <ins class="text-danger">negative</ins> points.
+    Jede der folgenden Fragen hat nur eine korrekte Antwort. 
+    Falsche Antworten resultieren in 
+    <ins class='text-danger'>Punktabzug</ins>.
    </p>
   {% elif type_dict[itr-1] == 'optional' %}
-   <h3>Multiple choice question</h3>
+   <h3>Multiple choice</h3>
    <p>
-    Each of the following question contains 
+    Jede der folgenden Fragen enthält mindestens einekorrekte Antwort.
     at least one correct answer. 
-    Wrong answer will get 
-    <ins class="text-danger">negative</ins> points.
+    Falsche Antworten resultieren in 
+    <ins class='text-danger'>Punktabzug</ins>.
    </p>
   {% elif type_dict[itr-1] == 'numerical' %}
-   <h3>Numerical question</h3>
+   <h3>Numerical</h3>
   {% elif type_dict[itr-1] == 'no_answer' %}
-   <h3>Derivation question</h3>
+   <h3>Derivation and discussion</h3>
   {% endif %}
  {% endif %}
  <hr>
