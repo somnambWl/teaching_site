@@ -133,6 +133,7 @@ def exercise(id=None, seed=None):
     type_length = 0
     for i in range(len(qlists)):
         qlist = qlists[i]
+        qlist.sort(key=lambda q: q.id)
         key = qkeys[i]
         if len(qlist) > 0:
             type_dict[type_length] = key
