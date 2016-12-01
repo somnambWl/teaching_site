@@ -19,7 +19,7 @@ def reevaluate(id=None):
         for sheet in Sheet.query.all():
             evaluate(sheet.question, sheet, sheet.user.random_seed)
     else:
-        sheet = Sheet.query.filter_by(id=id)
+        sheet = Sheet.query.filter_by(id=id).first()
         flash('reevaluate sheet for user %s' % sheet.user)
         evaluate(sheet.question, sheet, sheet.user.random_seed)
         
