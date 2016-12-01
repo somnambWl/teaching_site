@@ -226,12 +226,6 @@ class SheetView(BaseView):
                     model.point,
                 )
             )
-        else: 
-            return Markup(
-                "<a href='%s'>evaluate</a>" % (
-                    url_for('reevaluate', id=model.id),
-                )
-            )
     column_formatters = {
         'point': _point_formatter,
     }
