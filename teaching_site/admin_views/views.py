@@ -208,6 +208,16 @@ class VariableView(BaseView):
             Variable.name = form.name.data.replace('_', '')
 
 class SheetView(BaseView):
+    def _point_formatter(view, context, model, point):
+        return Markup(
+            "<a href='%s'>%s</a>" % (
+                url_for('reevaluate', id=model.id),
+                model.point
+            ) if model.point else ""
+        )
+    #column_formatters = {
+    #    'point': _point_formatter,
+    #}
     form_ajax_refs = {
         'user': {
             'fields': (User.fullname,),
