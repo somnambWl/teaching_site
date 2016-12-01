@@ -12,6 +12,8 @@ import warnings
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from flask_admin.form.widgets import Select2Widget
 from jinja2 import Markup
+from teaching_site.exercise.tools import evaluate
+from flask_admin.actions import action
 
 def is_admin():
     is_admin = False
@@ -208,6 +210,25 @@ class VariableView(BaseView):
             Variable.name = form.name.data.replace('_', '')
 
 class SheetView(BaseView):
+
+    @action("reevaluate", "Reevaluate", "Reevaluate selected sheets?")
+    def action_reevaluate(self, ids):
+        for id in ids:
+            sheet = Sheet.query.filter_by(id=id).first()
+            evaluate(sheet.question, sheet, sheet.user.random_seed)
+        flash("%d sheets reevaluated" % len(ids))
+
+    def _point_formatter(view, context, model, name):
+        if type(model.point) is float:
+            return Markup(
+                "<a href='%s'>%4.2f</a>" % (
+                    url_for('reevaluate', id=model.id),
+                    model.point,
+                )
+            )
+    column_formatters = {
+        'point': _point_formatter,
+    }
     form_ajax_refs = {
         'user': {
             'fields': (User.fullname,),
@@ -258,3 +279,4 @@ with warnings.catch_warnings():
     admin.add_view(UnitCategoryView(UnitCategory, db.session))
 admin.add_link(MenuLink(name='Home', category='Links', url='/index'))
 admin.add_link(MenuLink(name='Logout', category='Links', url='/logout'))
+admin.add_link(MenuLink(name='Re-evaluate all', category='Links', url='/reevaluate'))
