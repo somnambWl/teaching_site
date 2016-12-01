@@ -13,6 +13,10 @@ from teaching_site.exercise.tools import evaluate
 @admin_required
 def reevaluate():
     flash('reevaluate all exercise sheets')
+
+    for sheet in Sheet.query.all():
+        evaluate(sheet.question, sheet, sheet.user.random_seed)
+
     return redirect('admin/sheet')
     
 
