@@ -10,12 +10,19 @@ import numpy as np
 from teaching_site.exercise.tools import evaluate
 
 @app.route('/reevaluate')
+@app.route('/reevaluate/<int:id>')
 @admin_required
-def reevaluate():
-    flash('reevaluate all exercise sheets')
-
-    for sheet in Sheet.query.all():
+def reevaluate(id=None):
+    if id is None:
+        flash('reevaluate all exercise sheets')
+    
+        for sheet in Sheet.query.all():
+            evaluate(sheet.question, sheet, sheet.user.random_seed)
+    else:
+        sheet = Sheet.query.filter_by(id=id)
+        flash('reevaluate sheet for user %s' % sheet.user)
         evaluate(sheet.question, sheet, sheet.user.random_seed)
+        
 
     return redirect('admin/sheet')
     
