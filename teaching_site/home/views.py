@@ -3,10 +3,16 @@ from flask import render_template, redirect, url_for, flash, session, abort, req
 from teaching_site.exercise.models import Exercise, Sheet
 from teaching_site.user.decorators import login_required, admin_required
 from teaching_site.user.models import User
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 from numpy.random import randint
 import pandas as pd
+
+@app.before_request
+def before_request():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(hours=5)
+    session.modified = True
 
 @app.route('/')
 @app.route('/index')
