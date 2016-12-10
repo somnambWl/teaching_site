@@ -85,22 +85,22 @@ def score():
     # filter out admins
     users = User.query.filter_by(is_admin = False).all()
     exercises = Exercise.query.filter(
-        Exercise.close_date <= datetime.now()
+        Exercise.close_date <= datetime.now(),
+        Exercise.active,
     ).all()
     #sheets = Sheets.query.all()
 
     index = [user.fullname for user in users if user is not None]
-    dtype = [
-        ('Exercise %02d' % (i+1), 'float32') \
-        for i in range(len(exercises))
-    ]
+    dtype = [(str(e.name), 'float32') for e in exercises]
     kwargs = {}
     if dtype:
         score = np.zeros(len(index), dtype=dtype)
-        for u in range(len(users)):
-            user = users[u]
-            for e in range(len(exercises)):
-                exercise = exercises[e]
+        for e in range(len(exercises)):
+            exercise = exercises[e]
+            n_questions = len([q for q in exercise.questions
+                if not q.no_answer])
+            for u in range(len(users)):
+                user = users[u]
                 sheets = Sheet.query.filter_by(
                     user_id = user.id,
                     exercise_id = exercise.id
@@ -108,6 +108,12 @@ def score():
                 score[u][e] = np.array([
                     float(s.point) 
                     for s in sheets if s.point is not None
-                ]).sum() / float(len(exercise.questions))
-        kwargs['data'] = pd.DataFrame(score, index = index).to_html()
+                ]).sum() / float(n_questions) * 100
+        data = pd.DataFrame(
+            score, index = index
+        )
+        data['average'] = data.mean(numeric_only=True, axis=1)
+        kwargs['data'] = data.sort_values(
+            'average', ascending=False,
+        ).to_html(float_format="% 7.2f")
     return render_template('home/score.html', **kwargs)
