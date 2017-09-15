@@ -15,8 +15,8 @@ app = Flask(__name__)
 # modulize config from setting file
 app.config.from_pyfile('config/settings.py')
 base_setting = {
-    'ROOT': 'user@gmail.com',
-    'MAIL_USERNAME': 'user@gmail.com',
+    'ROOT': 'admin@gmail.com',
+    'MAIL_USERNAME': 'admin@gmail.com',
     'MAIL_PASSWORD': 'some_password',
     'SECRET_KEY': 'some key',
 }

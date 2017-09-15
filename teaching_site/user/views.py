@@ -178,9 +178,6 @@ def lost_password():
         msg += ", from IP: %s" % request.remote_addr
         app.logger.warning(msg)
         if user:
-            if user.is_admin:
-                flash('no password reset for admin users for se')
-                return render_template('user/lost.html', form=form)
             if user.validated:
                 alphanum = string.letters + string.digits
                 password_new = ''.join(choice(alphanum) \
