@@ -8,6 +8,7 @@ The following command should be executed before running the server
 * pip install -r requirements.txt (assuming proper enviroment is setup)
 * ./initialized.sh
 * python manage.py runserver (debug mode)
+* python manage.py gunicorn (production mode)
 
 The admin is set to be 
 * account: admin@gmail.com
