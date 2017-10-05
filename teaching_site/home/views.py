@@ -91,7 +91,7 @@ def score():
     #sheets = Sheets.query.all()
 
     index = [user.fullname for user in users if user is not None]
-    dtype = [(str(e.name), 'float32') for e in exercises]
+    dtype = [(e.name.encode('utf-8').strip(), 'float32') for e in exercises]
     kwargs = {}
     if dtype:
         score = np.zeros(len(index), dtype=dtype)

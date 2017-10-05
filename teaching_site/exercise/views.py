@@ -213,6 +213,7 @@ def exercise(id=None, seed=None):
             if form.validate_on_submit() and not question.no_answer:
                 if 'submit' in request.form.keys():
                     submit = True
+                    kwargs['readonly'] = True
                 answer = question.evaluate(seed)
                 if type(answer) is float:
                     sheet.number = form.number.data
