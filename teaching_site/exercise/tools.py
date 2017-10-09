@@ -1,7 +1,7 @@
 from teaching_site import db
 import numpy as np
 
-def evaluate(question, sheet, seed):
+def evaluate(question, sheet, seed, commit=True):
 
     error = None
     point = 0.0
@@ -24,7 +24,10 @@ def evaluate(question, sheet, seed):
                 ans_msg = "The correct answer is %E," % answer\
                           + " but you have entered %E." % tried
         else:
-            ans_msg = "You did not answer this question."
+            if commit:
+                ans_msg = "You did not answer this question."
+            else:
+                ans_msg = "Practice session."
     else:
         answer = np.array(answer)
         mask = np.array([
@@ -50,9 +53,13 @@ def evaluate(question, sheet, seed):
             or sheet.option3 or sheet.option4 or sheet.option5):
 
                 if not question.no_answer:
-                    point = 0
-                    ans_msg = "You did not answer this question."
-                    status = "text-danger"
+                    if commit:
+                        point = 0
+                        ans_msg = "You did not answer this question."
+                        status = "text-danger"
+                    else:
+                        ans_msg = "Practice session."
+                 
             else:
                 corrects = 0
                 for j in range(n_options):
@@ -97,9 +104,10 @@ def evaluate(question, sheet, seed):
 
     sheet.point = point
 
-    try:
-        db.session.commit()
-    except:
-        error = "Evaluated results can not be saved, " +\
-                " please contact course administrator."
+    if commit:
+        try:
+            db.session.commit()
+        except:
+            error = "Evaluated results can not be saved, " +\
+                    " please contact course administrator."
     return point, status, ans_msg, error

@@ -107,6 +107,10 @@ def exercise(id=None, seed=None):
 
     if seed is None:
         seed = user.random_seed
+    elif now > exercise.close_date or user.is_admin:
+        practice = True
+        kwargs['readonly'] = False
+
 
     if seed and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
@@ -171,11 +175,14 @@ def exercise(id=None, seed=None):
         ans_msg = ''
         status= ''
 
-        sheet = Sheet.query.filter_by(
-            user_id = user.id,
-            exercise_id = exercise.id,
-            question_id = question.id
-        ).first()
+        if not practice:
+            sheet = Sheet.query.filter_by(
+                user_id = user.id,
+                exercise_id = exercise.id,
+                question_id = question.id
+            ).first()
+        else:
+            sheet = False
         if not sheet and not question.no_answer:
             sheet = Sheet(
                 user_id = user.id,
@@ -255,7 +262,7 @@ def exercise(id=None, seed=None):
                         db.session.flush()
                     except:
                         error = "Answer can not be saved..., " +\
-                                "please contact coure administrator"
+                                "please contact course administrator"
         
                     if sheet.id:
                         db.session.commit()
@@ -305,7 +312,7 @@ def exercise(id=None, seed=None):
         if now > exercise.close_date or practice or submit or submitted:
             if not question.no_answer:
                 point, status, ans_msg, error = \
-                    evaluate(question, sheet, seed)
+                    evaluate(question, sheet, seed, False)
                 points.append(round(point, 3))
     
             if not practice:
