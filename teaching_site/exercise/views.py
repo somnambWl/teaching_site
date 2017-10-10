@@ -111,15 +111,10 @@ def exercise(id=None, seed=None):
         practice = True
         kwargs['readonly'] = False
 
-
     if seed and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
             practice = True
             kwargs['readonly'] = False
-        else:
-            seed = user.random_seed
-    else:
-        seed = user.random_seed
 
     forms = []
     status_list = []
@@ -183,17 +178,22 @@ def exercise(id=None, seed=None):
             ).first()
         else:
             sheet = False
+
         if not sheet and not question.no_answer:
             sheet = Sheet(
                 user_id = user.id,
                 exercise_id = exercise.id,
                 question_id = question.id
             )
+
         if not question.no_answer:
             if sheet.point is not None:
                 submitted = True
                 if now < exercise.close_date:
                     kwargs['readonly'] = True
+                if seed != user.random_seed:
+                    practice = True
+                    kwargs['readonly'] = False
         else:
             try:
                 if last_edited:
@@ -256,7 +256,7 @@ def exercise(id=None, seed=None):
                 edit_time = datetime.now()
                 sheet.edit_date = edit_time
 
-                if not practice:
+                if not practice and not submitted:
                     try:
                         db.session.add(sheet)
                         db.session.flush()
@@ -309,16 +309,32 @@ def exercise(id=None, seed=None):
                         if submit:
                             flash('Results submitted')
                         flashed = True
+            # necessary to render save check boxes
+            elif not practice:
+                question._options[0] = sheet.option1
+                question._options[1] = sheet.option2
+                question._options[2] = sheet.option3
+                question._options[3] = sheet.option4
+                question._options[4] = sheet.option5
         if now > exercise.close_date or practice or submit or submitted:
             if not question.no_answer:
+                commit = True
+                if practice or submitted:
+                    commit = False
                 point, status, ans_msg, error = \
-                    evaluate(question, sheet, seed, False)
+                    evaluate(question, sheet, seed, commit)
                 points.append(round(point, 3))
     
             if not practice:
-                if not flashed:
-                    flash('This exercise is already closed.')
-                    flashed = True
+                if now > exercise.close_date:
+                    if not flashed:
+                        flash('This exercise is already closed.')
+                        flashed = True
+                elif submit or submitted:
+                    if not flashed:
+                        flash('You have already submitted.')
+                        flashed = True
+
             else:
                 if not flashed:
                     flash('Practice results will not be saved.')
@@ -332,6 +348,7 @@ def exercise(id=None, seed=None):
                flashed = True
         status_list.append(status)
         ans_msgs.append(ans_msg)
+
     kwargs['status_list'] = status_list
     kwargs['points'] = points
     kwargs['ans_msgs'] = ans_msgs
