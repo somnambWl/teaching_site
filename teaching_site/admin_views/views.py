@@ -218,6 +218,28 @@ class SheetView(BaseView):
             evaluate(sheet.question, sheet, sheet.user.random_seed)
         flash("%d sheets reevaluated" % len(ids))
 
+    @action("deevaluate", "Deevaluate", "Deevaluate selected sheets (removing point)?")
+    def action_deevaluate(self, ids):
+        for id in ids:
+            sheet = Sheet.query.filter_by(id=id).first()
+            sheet.point = None
+            try:
+                db.session.commit()
+            except:
+                error = "Deevaluated sheet can not be saved."
+        flash("%d sheets deevaluated" % len(ids))
+
+    @action("givepoint", "Give point", "Give point to selected sheets?")
+    def action_givepoint(self, ids):
+        for id in ids:
+            sheet = Sheet.query.filter_by(id=id).first()
+            sheet.point = 1.0
+            try:
+                db.session.commit()
+            except:
+                error = "Deevaluated sheet can not be saved."
+        flash("%d sheets deevaluated" % len(ids))
+
     def _point_formatter(view, context, model, name):
         if type(model.point) is float:
             return Markup(
