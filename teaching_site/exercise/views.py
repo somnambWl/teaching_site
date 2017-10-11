@@ -163,6 +163,7 @@ def exercise(id=None, seed=None):
     question_list.extend(no_answer_list)
     kwargs['question_list'] = question_list
 
+    flash_date = False
     for i in range(len(question_list)):
 
         question = question_list[i]
@@ -176,6 +177,10 @@ def exercise(id=None, seed=None):
                 exercise_id = exercise.id,
                 question_id = question.id
             ).first()
+            if sheet and sheet.edit_date and not flash_date:
+                flash('Your answer was editted on %s. ' % \
+                      sheet.edit_date.strftime("%Y/%m/%d, %H:%M"))
+                flash_date = True
         else:
             sheet = False
 
@@ -311,11 +316,14 @@ def exercise(id=None, seed=None):
                         flashed = True
             # necessary to render save check boxes
             elif not practice:
-                question._options[0] = sheet.option1
-                question._options[1] = sheet.option2
-                question._options[2] = sheet.option3
-                question._options[3] = sheet.option4
-                question._options[4] = sheet.option5
+                try:
+                    question._options[0] = sheet.option1
+                    question._options[1] = sheet.option2
+                    question._options[2] = sheet.option3
+                    question._options[3] = sheet.option4
+                    question._options[4] = sheet.option5
+                except:
+                    pass
         if now > exercise.close_date or practice or submit or submitted:
             if not question.no_answer:
                 commit = True
