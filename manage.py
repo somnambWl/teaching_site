@@ -15,8 +15,8 @@ from dateutil.relativedelta import relativedelta
 
 class GunicornServer(Command):
     description = 'Run the app within Gunicorn'
-    def __init__(self, host='0.0.0.0', port=int(os.getenv('PORT', 8000)), workers=4):
-    #def __init__(self, host='127.0.0.1', port=80, workers=4):
+    #def __init__(self, host='0.0.0.0', port=int(os.getenv('PORT', 8000)), workers=4):
+    def __init__(self, host='127.0.0.1', port=80, workers=4):
         self.port = port
         self.host = host
         self.workers = workers
@@ -191,6 +191,23 @@ def create_exercise():
         config['name'] = exe_config['name']
         config['open_date'] = datetime.today() - relativedelta(years=1)
         config['close_date'] = datetime.today() + relativedelta(years=1)
+        questions = []
+        for q in exe_config['questions']:
+            question = Question.query.filter_by(
+                name = q
+            ).first()
+            if question:
+                questions.append(question)
+            else:
+                print "failed, %s not found" % q
+        config['questions'] = questions
+        exercise = Exercise(**config)
+        db.session.add(exercise)
+    for exe_config in app.config['EXERCISE']:
+        config = {}
+        config['name'] = exe_config['name'] + ' (expired)'
+        config['open_date'] = datetime.today() - relativedelta(years=2)
+        config['close_date'] = datetime.today() - relativedelta(years=1)
         questions = []
         for q in exe_config['questions']:
             question = Question.query.filter_by(

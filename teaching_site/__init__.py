@@ -15,9 +15,9 @@ app = Flask(__name__)
 # modulize config from setting file
 app.config.from_pyfile('config/settings.py')
 base_setting = {
-    'ROOT': 'admin@gmail.com',
-    'MAIL_USERNAME': 'admin@gmail.com',
-    'MAIL_PASSWORD': 'some_password',
+    'ROOT': 'admin',
+    'MAIL_USERNAME': 'admin@gmail.com', # Change here to get mail server working
+    'MAIL_PASSWORD': 'some_password',   # Change here to get mail server working
     'SECRET_KEY': 'some key',
 }
 for key, value in base_setting.items():
@@ -65,7 +65,8 @@ def send_email(recipients, title, body):
         recipients = recipients
     )
     msg.body = body
-    mail.send(msg)
+    print body
+    #mail.send(msg)
 
 # images
 uploaded_images = UploadSet('images', IMAGES)
