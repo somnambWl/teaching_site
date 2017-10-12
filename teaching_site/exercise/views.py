@@ -315,7 +315,7 @@ def exercise(id=None, seed=None):
                             flash('Results submitted')
                         flashed = True
             # necessary to render save check boxes
-            elif not practice:
+            elif seed == user.random_seed:
                 try:
                     question._options[0] = sheet.option1
                     question._options[1] = sheet.option2
@@ -324,6 +324,16 @@ def exercise(id=None, seed=None):
                     question._options[4] = sheet.option5
                 except:
                     pass
+        # necessary to render save check boxes
+        elif seed == user.random_seed:
+            try:
+                question._options[0] = sheet.option1
+                question._options[1] = sheet.option2
+                question._options[2] = sheet.option3
+                question._options[3] = sheet.option4
+                question._options[4] = sheet.option5
+            except:
+                pass
         if now > exercise.close_date or practice or submit or submitted:
             if not question.no_answer:
                 commit = True
