@@ -24,10 +24,7 @@ def evaluate(question, sheet, seed, commit=True):
                 ans_msg = "The correct answer is %E," % answer\
                           + " but you have entered %E." % tried
         else:
-            if commit:
-                ans_msg = "You did not answer this question."
-            else:
-                ans_msg = "Practice session."
+            ans_msg = "You did not answer this question."
     else:
         answer = np.array(answer)
         mask = np.array([
@@ -53,12 +50,9 @@ def evaluate(question, sheet, seed, commit=True):
             or sheet.option3 or sheet.option4 or sheet.option5):
 
                 if not question.no_answer:
-                    if commit:
-                        point = 0
-                        ans_msg = "You did not answer this question."
-                        status = "text-danger"
-                    else:
-                        ans_msg = "Practice session."
+                    point = 0
+                    ans_msg = "You did not answer this question."
+                    status = "text-danger"
                  
             else:
                 corrects = 0
