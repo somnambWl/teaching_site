@@ -11,8 +11,11 @@ The following command should be executed before running the server
 * python manage.py gunicorn (production mode)
 
 The admin is set to be 
-* account: admin@gmail.com
+* account: admin
 * passwd: admin
 (see teaching\_site/\_\_init.py\_\_)
+
+__NOTE: PLEASE CHANGE THE EMAIL WITH CORRECT LOGIN__
+It is necessary for sending email of validation code
 
 The default admin address need to be changed to have gmail response for user password reset
