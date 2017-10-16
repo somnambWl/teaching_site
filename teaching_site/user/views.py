@@ -38,8 +38,27 @@ def login():
                 # set session variable username when login
                 msg = "%s: %s logged in from %s" %\
                       (datetime.now().strftime("%Y/%m/%d-%H:%M:%S"),
-                       user.email,
+                       user.username,
                        request.remote_addr)
+                app.logger.info(msg)
+                msg = " %s-agent: %s" % (\
+                    user.username, 
+                    getattr(request, 'user_agent'))
+                app.logger.info(msg)
+                msg = " %s-encoding: %s" % (\
+                    user.username, 
+                    getattr(request, 'accept_encodings'))
+                app.logger.info(msg)
+                msg = " %s-language: %s" % (\
+                    user.username, 
+                    getattr(request, 'accept_languages'))
+                msg = " %s-mimetypes: %s" % (\
+                    user.username, 
+                    request.accept_mimetypes)
+                app.logger.info(msg)
+                msg = " %s-cookies: %s" % (\
+                    user.username, 
+                    request.cookies)
                 app.logger.info(msg)
                 login_user(user)
                 if form.password.data == user.password_tmp:

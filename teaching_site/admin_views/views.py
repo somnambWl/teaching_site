@@ -14,6 +14,9 @@ from flask_admin.form.widgets import Select2Widget
 from jinja2 import Markup
 from teaching_site.exercise.tools import evaluate
 from flask_admin.actions import action
+from random import choice
+import string
+alphanum = string.ascii_letters + string.digits
 
 def is_admin():
     is_admin = False
@@ -39,6 +42,24 @@ class BaseView(ModelView):
         return redirect(url_for('index'))
 
 class UserView(BaseView):
+
+    @action("ban_user", "Ban user", "Ban selected users?")
+    def ban_user(self, ids):
+        for id in ids:
+            user = User.query.filter_by(id=id).first()
+            user.validated = False
+            need_new_valid = True
+            while need_new_valid:
+                new_valid = ''.join(choice(alphanum) for _ in range(6))
+                if new_valid != user.validation_code:
+                    user.validation_code = new_valid
+                    need_new_valid = False
+            try:
+                db.session.commit()
+            except:
+                error = "Ban user can not be saved."
+        flash("%d users baned" % len(ids))
+
     column_list = ('fullname', 'email', 
         'username', 'validated', 'is_admin')
     column_searchable_list = ('username', 'email', 'fullname')
@@ -48,11 +69,13 @@ class UserView(BaseView):
         'username': 'Username',
         'password_tmp': '1-time Password',
         'random_seed': 'Random seed',
+        'validation_code': 'Validation code',
         'validated': 'Validated',
         'is_admin': 'Admin',
     }
     form_rules = ('fullname', 'email', 'username', 
-        'password_tmp', 'random_seed', 'validated', 'is_admin')
+        'password_tmp', 'random_seed', 'validation_code', 
+        'validated', 'is_admin')
 
     def on_model_change(self, form, User):
         if not form.random_seed.data:

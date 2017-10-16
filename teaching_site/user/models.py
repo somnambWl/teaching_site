@@ -18,7 +18,7 @@ class User(db.Model):
     random_seed = db.Column(db.Integer)
 
     def __init__(self, fullname='', email='', username='', 
-                 password='', is_admin='', validated='', 
+                 password='', is_admin='', validated='',
                  validation_code = None, password_tmp = ''):
         self.fullname = fullname
         self.email = email
