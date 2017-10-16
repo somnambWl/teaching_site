@@ -36,6 +36,11 @@ def login():
             if password_in == user.password \
             or form.password.data == user.password_tmp:
                 # set session variable username when login
+                msg = "%s: %s logged in from %s" %\
+                      (datetime.now().strftime("%Y/%m/%d-%H:%M:%S"),
+                       user.email,
+                       request.remote_addr)
+                app.logger.info(msg)
                 login_user(user)
                 if form.password.data == user.password_tmp:
                     user.password_tmp = ''
