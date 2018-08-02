@@ -83,6 +83,10 @@ def exercise(id=None, seed=None):
     user = User.query.filter_by(
         username = session['username']
     ).first()
+
+    if not user.validated:
+        return redirect(url_for('validate'))
+
     if not exercise.active and not user.is_admin:
         abort(404)
     if user.is_admin:
