@@ -1,6 +1,8 @@
 Flask teaching site framwork
 ============================
 
+Python2.7
+
 This is the exercise page for quantum chemistry. 
 It is designed to automize the exercise evaluation using Flask/SQLAlchemy.
 
