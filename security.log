@@ -1,0 +1,26 @@
+2018/08/08-14:41:03: admin logged in from 127.0.0.1
+ admin-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-14:41:15: user update for email:admin, new username: admin
+2018/08/08-16:04:32: request for lost password reset for email:stefanniklaus.heinen@unibas.ch, from IP: 127.0.0.1
+2018/08/08-16:05:59: request for lost password reset for email:stefanniklaus.heinen@unibas.ch, from IP: 127.0.0.1
+2018/08/08-16:06:02: request for lost password reset for email:stefanniklaus.heinen@unibas.ch, from IP: 127.0.0.1
+2018/08/08-16:19:08: admin logged in from 127.0.0.1
+ admin-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:20:32: request for lost password reset for email:stefanniklaus.heinen@unibas.ch, from IP: 127.0.0.1
+2018/08/08-16:20:43: Heini logged in from 127.0.0.1
+ Heini-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:20:51: user update for email:stefanniklaus.heinen@unibas.ch, new username: Heini
+2018/08/08-16:23:03: Heini logged in from 127.0.0.1
+ Heini-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:23:35: admin logged in from 127.0.0.1
+ admin-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:26:11: admin logged in from 127.0.0.1
+ admin-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:31:32: Heini logged in from 127.0.0.1
+ Heini-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:42:53: admin logged in from 127.0.0.1
+ admin-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:45:28: Heini logged in from 127.0.0.1
+ Heini-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+2018/08/08-16:45:50: admin logged in from 127.0.0.1
+ admin-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36

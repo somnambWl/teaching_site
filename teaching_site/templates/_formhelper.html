@@ -16,7 +16,7 @@
 {% macro render_checkbox(box, options, i) %}
 {% if options[i] %}
 {% if options[i] is string %}
-{% set text = options[i].decode('utf-8') %}
+{% set text = options[i] %}
 {% else %}
 {% set text = options[i] %}
 {% endif %}
@@ -32,7 +32,7 @@
  {% if options[i] %}
 
   {% if options[i] is string %}
-   {% set text = options[i].decode('utf-8') %}
+   {% set text = options[i] %}
   {% else %}
    {% set text = options[i] %}
   {% endif %}

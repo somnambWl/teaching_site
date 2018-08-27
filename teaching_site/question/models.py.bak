@@ -310,7 +310,7 @@ class Variable(db.Model):
             return value
         elif self.category == 'int':
             if type(c) is tuple:
-                value = rs.choice(list(range(*c)))
+                value = rs.choice(range(*c))
             elif type(c) is list:
                 value = rs.choice(c)
             elif type(c) is dict:

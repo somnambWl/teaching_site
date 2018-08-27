@@ -227,7 +227,7 @@ def exercise(id=None, seed=None):
             if not submitted:
                 kwargs['readonly'] = False
             if form.validate_on_submit() and not question.no_answer:
-                if 'submit' in list(request.form.keys()):
+                if 'submit' in request.form.keys():
                     submit = True
                     kwargs['readonly'] = True
                 answer = question.evaluate(seed)

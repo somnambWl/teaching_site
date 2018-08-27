@@ -188,7 +188,7 @@ def lost_password():
         app.logger.warning(msg)
         if user:
             if user.validated:
-                alphanum = string.letters + string.digits
+                alphanum = string.ascii_letters + string.digits
                 password_new = ''.join(choice(alphanum) \
                     for _ in range(8))
                 user.password_tmp = password_new

@@ -92,11 +92,11 @@ def init():
     try:
         db.session.commit()
     except:
-        print("admin can not be added")
+        print "admin can not be added"
 
 @manager.command
 def create_unit():
-    for name, base in list(app.config['UNIT_CATAGORIES'].items()):
+    for name, base in app.config['UNIT_CATAGORIES'].items():
         unit = UnitCategory(name, *base)
         db.session.add(unit)
     try:
@@ -108,8 +108,8 @@ def create_unit():
         try:
             db.session.commit()
         except:
-            print(unit[0], end=' ')
-            print('failed')
+            print unit[0],
+            print 'failed'
 
 @manager.command
 def create_variable():
@@ -124,7 +124,7 @@ def create_variable():
                 if unit is not None:
                     units.append(unit)
                 else:
-                    print("%s not found" % unit_str)
+                    print "%s not found" % unit_str
             variable['units'] = units
         db.session.add(Variable(
             **variable
@@ -157,7 +157,7 @@ def create_question():
         config['category_id'] = qc.id
         if 'answer_command' in question_config:
             config['answer_command'] = question_config['answer_command']
-        for key, value in list(obj_list_dict.items()):
+        for key, value in obj_list_dict.items():
             if key in question_config:
                 obj_list = []
                 config[key] = obj_list
@@ -168,8 +168,8 @@ def create_question():
                     if obj:
                         obj_list.append(obj)
                     else:
-                        print("failed, %s not found" % obj_str)
-        for key, value in list(obj_dict.items()):
+                        print "failed, %s not found" % obj_str
+        for key, value in obj_dict.items():
             if key in question_config:
                 obj_str = question_config[key]
                 obj = value.query.filter_by(
@@ -178,7 +178,7 @@ def create_question():
                 if obj:
                     config[key] = obj
                 else:
-                    print("failed, %s not found" % obj_str)
+                    print "failed, %s not found" % obj_str
         db.session.add(Question(
             **config
         ))
@@ -199,7 +199,7 @@ def create_exercise():
             if question:
                 questions.append(question)
             else:
-                print("failed, %s not found" % q)
+                print "failed, %s not found" % q
         config['questions'] = questions
         exercise = Exercise(**config)
         db.session.add(exercise)
@@ -216,7 +216,7 @@ def create_exercise():
             if question:
                 questions.append(question)
             else:
-                print("failed, %s not found" % q)
+                print "failed, %s not found" % q
         config['questions'] = questions
         exercise = Exercise(**config)
         db.session.add(exercise)

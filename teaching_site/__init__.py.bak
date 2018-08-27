@@ -20,7 +20,7 @@ base_setting = {
     'MAIL_PASSWORD': 'some_password',   # Change here to get mail server working
     'SECRET_KEY': 'some key',
 }
-for key, value in list(base_setting.items()):
+for key, value in base_setting.items():
     if key not in os.environ or os.environ[key] is None:
         app.config[key] = value
     else:
@@ -65,7 +65,7 @@ def send_email(recipients, title, body):
         recipients = recipients
     )
     msg.body = body
-    print(body)
+    print body
     #mail.send(msg)
 
 # images

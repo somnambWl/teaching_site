@@ -1,0 +1,5 @@
+virtualenv ~/example.com/my_project -p /home/example_username/opt/python-3.6.2/bin/python3
+source my_project/bin/activate
+deactivate
+rm -rf /home/username/example.com/my_project
+

@@ -2,6 +2,7 @@ from teaching_site import db
 import numpy as np
 
 def evaluate(question, sheet, seed, commit=True):
+    print("evaluate is running")
 
     error = None
     point = 0.0
@@ -9,14 +10,20 @@ def evaluate(question, sheet, seed, commit=True):
     ans_msg = "You did not answer this question."
     answer =  question.evaluate(seed)
     if type(answer) is float:
+        print("answ float")
+        print(sheet.number)
         if sheet.number:
+            print("sheet")
             tried = float(sheet.number)
             if answer == 0 and abs(tried) < 1E-3:
                 point = 1.0
                 ans_msg = "Your answer is correct!"
+                print("answer 0")
                 status = 'text-success'
             elif answer != 0\
             and abs((tried - answer)/answer) < 0.1:
+                print("divide")
+                print("answer 1")
                 point = 1.0
                 ans_msg = "Your answer is correct!"
                 status = 'text-success'
@@ -25,6 +32,7 @@ def evaluate(question, sheet, seed, commit=True):
                           + " but you have entered %E." % tried
         else:
             ans_msg = "You did not answer this question."
+            print("sheet2")
     else:
         answer = np.array(answer)
         mask = np.array([
