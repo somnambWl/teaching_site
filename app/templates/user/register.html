@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}
+- Register
+{% endblock %}
+
+{% block content %}
+	<h3>User Registration</h3>
+	{% include '_errormessages.html' %}
+	{% from "_formhelper.html" import render_field %}
+	{% include '_flashmessages.html'%}
+	<form method="POST" action="{{ url_for('register') }}" role="form">
+			{{ form.hidden_tag() }}
+			{{ render_field(form.fullname, class='form-control') }}
+			{{ render_field(form.username, class='form-control') }}
+			{{ render_field(form.email, class='form-control') }}
+			{{ render_field(form.password, class='form-control') }}
+			{{ render_field(form.confirm, class='form-control') }}
+			<button type="submit" class="btn btn-default">Register</button>
+	</form>
+{% endblock %}
+
+{% block footer %}
+	{% include 'footer/footer_register.html' %}
+{% endblock %}
