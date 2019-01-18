@@ -1,7 +1,10 @@
-from app import db
+#!/usr/bin/env python
+
 from random import choice
 import string
 from numpy.random import randint
+
+from app import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)

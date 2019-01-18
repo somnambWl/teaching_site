@@ -9,9 +9,9 @@ import pandas as pd
 from flask import render_template, redirect, url_for, flash, session, abort, request
 
 from app import app, db
-from app.models.exercise import Exercise, Sheet
-from app.commonr.decorators import login_required, admin_required
-from app.models.user import User
+#from app.models.exercise import Exercise, Sheet
+#from app.common.decorators import login_required, admin_required
+#from app.models.user import User
 
 @app.before_request
 def before_request():

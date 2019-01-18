@@ -1,13 +1,17 @@
-from teaching_site import app, db
-from flask import render_template, redirect, url_for, flash, session, abort, request
-from teaching_site.exercise.models import Exercise, Sheet, Question
-from teaching_site.exercise.form import QuestionForm
-from teaching_site.user.decorators import login_required, only_from, admin_required
-from teaching_site.user.models import User
+
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
-from teaching_site.exercise.tools import evaluate
+
+from flask import render_template, redirect, url_for, flash, session, \
+        abort, request
+
+from app import app, db
+from app.models.exercise import Exercise, Sheet, Question
+from app.forms.exercise import QuestionForm
+from app.common.decorators import login_required, only_from, admin_required
+from app.models.user import User
+from app.common.tools import evaluate
 
 @app.route('/reevaluate')
 @app.route('/reevaluate/<int:id>')

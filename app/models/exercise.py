@@ -1,7 +1,9 @@
+
+from datetime import datetime
+
 from app import db
 from app.models.user import User
 from app.models.question import Question
-from datetime import datetime
 
 question_exercise = db.Table(
     'question_exercise',

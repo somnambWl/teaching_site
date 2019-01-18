@@ -1,13 +1,18 @@
-from teaching_site import app, db, mail, send_email
-from flask import render_template, redirect, url_for, flash, session, abort, request
-from teaching_site.user.form import RegisterForm, LoginForm, ValidationForm, LostForm
-from teaching_site.user.models import User
-from teaching_site.user.decorators import login_required, only_from
-import bcrypt
+
 from random import choice
 import string
 from numpy.random import randint
 from datetime import datetime
+
+from flask import render_template, redirect, url_for, flash, session, \
+        abort, request
+import bcrypt
+
+from app import app, db
+from app.forms.user import RegisterForm, LoginForm, ValidationForm, LostForm
+from app.models.user import User
+from app.common.decorators import login_required, only_from
+from app.common.email import send_email
 
 def login_user(user):
     session['username'] = user.username
@@ -19,39 +24,42 @@ def login():
     error = None
     if request.method=='GET' and request.args.get('next'):
         session['next'] = request.args.get('next', None)
-    if form.validate_on_submit():
-        user = User.query.filter_by(
-            username=form.username.data,
-        ).first()
-        if user:
-            if user.password != '':
+    if form.validate_on_submit():   # After submission of login formular
+        # Search for user with submitted username
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:   # If the user does exist
+            if user.password != '':   # Check if password was submitted
                 try:
-                    password_in = bcrypt.hashpw(
-                        form.password.data, user.password
-                    )
+                    # Encrypt password
+                    # (In the database there are only hashed passwords,
+                    #  so we need to encrypt it everytime the same way)
+                    password_in = bcrypt.hashpw(form.password.data, 
+                            user.password)
                 except TypeError:
                     password_in = ''
             else:
                 password_in = form.password.data
+            # If the password hash matches the one in the database or the
+            # temporary one:
             if password_in == user.password \
-            or form.password.data == user.password_tmp:
+                    or form.password.data == user.password_tmp:
                 # set session variable username when login
-                msg = "%s: %s logged in from %s" %\
-                      (datetime.now().strftime("%Y/%m/%d-%H:%M:%S"),
-                       user.username,
-                       request.remote_addr)
+                msg = f"{datetime.now().strftime('%Y/%m/%d-%H:%M:%S')}: " \
+                        "{user.username} logged in from {request.remote_addr}."
                 app.logger.info(msg)
-                msg = " %s-agent: %s" % (\
-                    user.username, 
-                    getattr(request, 'user_agent'))
+                msg = f"{user.username}-agent: {getattr(request, 'user_agent')}"
                 app.logger.info(msg)
                 login_user(user)
+                # If the temporary password was used:
                 if form.password.data == user.password_tmp:
+                    # Reset the temporary password
                     user.password_tmp = ''
                     db.session.commit()
-                    flash('temporary password expired')
-                    flash('please reset your password')
+                    flash('Temporary password expired.')
+                    flash('Please, reset your password.')
+                    # Redirect to the profile page
                     return redirect(url_for('user_setting'))
+                # If the user is not validated, redirect him for validation
                 if not user.validated:
                     return redirect(url_for('validate'))
                 if 'next' in session:
@@ -59,7 +67,7 @@ def login():
                     session.pop('next')
                     return redirect(next)
                 else:
-                    flash("login as %s" % session['username'])
+                    flash(f"Login as {session['username']}")
                     return redirect(url_for('index'))
             else:
                 error = "Incorrect username or password"
@@ -72,35 +80,26 @@ def register():
     form = RegisterForm()
     error = ""
     if form.validate_on_submit():
+        # Convert password to hashed password
         salt = bcrypt.gensalt()
         hashedpw = bcrypt.hashpw(form.password.data, salt)
 
-        # check register list
-        # check admin
-        # get random seed
+        #OldTODO check register list
+        #OldTODO check admin
+        #OldTODO get random seed
+        
+        # Load data from formular to User class
         is_admin = False
         validated = False
-
-        user_new = User(
-            form.fullname.data,
-            form.email.data,
-            form.username.data,
-            hashedpw,
-            is_admin,
-            validated,
-        )
-
-        user_old = User.query.filter_by(
-            email=form.email.data,
-        ).first()
-
-        if user_old:
+        user_new = User(form.fullname.data, form.email.data, 
+                form.username.data, hashedpw, is_admin, validated)
+        # Check for already registered user with same email
+        user_old = User.query.filter_by(email=form.email.data).first()
+        if user_old:   # Email address already used
             if user_old.validated:
-                error = "email: %s already registered" % user_new.email
-                return render_template(
-                    'user/register.html', 
-                    form=form, error=error
-                )
+                error = f"E-mail address {user_new.email} already registered"
+                return render_template('user/register.html', 
+                        form=form, error=error)
             else:
                 user_old.fullname = user_new.fullname
                 user_old.username = user_new.username
@@ -110,27 +109,26 @@ def register():
                 db.session.commit()
                 send_validation_email()
                 return redirect(url_for('validate'))
-
+        # Email address was not used, so add new user to the database
         try:
             db.session.add(user_new)
             db.session.flush()
-        except:
-            error = "username: %s is already taken" % user_new.username
-            return render_template(
-                'user/register.html', 
-                form=form, error=error
-            )
-
+        except:   # Username was taken, so try registration once again
+            error = "Username {user_new.username} is already taken."
+            return render_template('user/register.html', 
+                    form=form, error=error)
+        # Nor email address nor username were used, finalize saving to the
+        # database, login user and send him a validation email.
         if user_new.id:
             db.session.commit()
-            flash("User %s created" % form.username.data)
+            flash(f"User {form.username.data} created")
             session['username'] = form.username.data
             session['is_admin'] = is_admin
             send_validation_email()
             return redirect(url_for('validate'))
         else:
             db.session.rollback()
-            error = "Error creating user, please contact administrator"
+            error = "Error creating user, please try again or contact administrator."
     return render_template('user/register.html', form=form, error=error)
 
 @app.route('/validate', methods=['GET', 'POST'])
@@ -139,8 +137,7 @@ def validate():
     form = ValidationForm()
     error = ""
     user = User.query.filter_by(
-        username=session['username'],
-    ).first()
+            username=session['username'],).first()
     user_id = user.id
     if user.validated:
         return redirect(url_for('index'))
@@ -150,10 +147,8 @@ def validate():
             user.validated = True
             db.session.commit()
             return redirect(url_for('index'))
-    return render_template(
-        'user/validate.html', 
-        form=form, user=user, user_id=user_id, error = error
-    )
+    return render_template('user/validate.html', form=form, user=user, 
+            user_id=user_id, error = error)
     
 @app.route('/send_validate_email')
 @login_required

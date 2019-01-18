@@ -4,6 +4,8 @@
 
 {% block content %}
 <h3> Welcome to exercises PCIV </h3>
+<!--
+{#
 <hr>
 	{% include '_errormessages.html'%}
 	{% include '_flashmessages.html'%}
@@ -12,8 +14,6 @@
 	{% set name = enames[itr] %}
 	{% set N = nq[itr] %}
 	{% set date = dates[itr] %}
-<!--
-{#
 	<h4>
 		<a href="{{ url_for('exercise', id=id) }}">{{name}}</a>
 	</h4>
@@ -29,8 +29,8 @@
 #}
 //-->
 {% endblock %}
-{#
+
 {% block footer %}
 {% include "footer/footer_home.html" %}
 {% endblock %}
-#}
+

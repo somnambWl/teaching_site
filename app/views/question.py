@@ -1,5 +1,8 @@
-from teaching_site import app, db
-from flask import render_template, redirect, url_for, flash, session, abort, request
+
+from flask import render_template, redirect, url_for, flash, session, \
+        abort, request
+
+from app import app, db
 
 @app.route('/question')
 @app.route('/question/<int:id>')
