@@ -12,7 +12,7 @@ from app import app, db
 from app.forms.user import RegisterForm, LoginForm, ValidationForm, LostForm
 from app.models.user import User
 from app.common.decorators import login_required, only_from
-from app.common.email import send_email
+from app.common.mail import send_email
 
 def login_user(user):
     session['username'] = user.username
@@ -154,17 +154,14 @@ def validate():
 @login_required
 @only_from('validate', 'register')
 def send_validation_email():
-    user = User.query.filter_by(
-        username=session['username'],
-    ).first()
+    user = User.query.filter_by(username=session['username']).first()
     title = "Validation code"
     text_list = [
-        "Welcome %s\n\n" % user.fullname,
-        "Your validation code is: %s\n" % user.validation_code,
-    ]
+            f"Welcome {user.fullname} \n\n",
+            f"Your validation code is: {user.validation_code} \n"]
     body = ''.join(text_list)
     send_email(user.email, title, body)
-    flash('sending validation email to %s' % user.email)
+    flash(f'Sending validation email to {user.email}')
     return redirect(url_for('validate'))
 
 @app.route('/lost_password', methods=['GET', 'POST'])
@@ -173,13 +170,10 @@ def lost_password():
     form = LostForm()
     error = ""
     if form.validate_on_submit():
-        user = User.query.filter_by(
-            email = form.email.data
-        ).first()
-        msg = "%s: request for lost password reset for email:%s" %\
-              (datetime.now().strftime("%Y/%m/%d-%H:%M:%S"),
-               user.email)
-        msg += ", from IP: %s" % request.remote_addr
+        user = User.query.filter_by(email = form.email.data).first()
+        msg = f"{datetime.now().strftime('%Y/%m/%d-%H:%M:%S')}: request for" \
+                " lost password reset for email: {user.email}" \
+                ", from IP: {request.remote_addr}"
         app.logger.warning(msg)
         if user:
             if user.validated:
@@ -188,13 +182,12 @@ def lost_password():
                     for _ in range(8))
                 user.password_tmp = password_new
                 db.session.commit()
-     
                 title = 'Reset password'
-                body = 'Hi %s,\n\n Your temporary password is: %s\n'\
-                    % (user.fullname, password_new)
+                body = f"Hi {user.fullname}, \n\n" \
+                        "Your temporary password is: {password_new}\n"
                 send_email(user.email, title, body)
-            flash('inscruction has been sent')
-        flash('no email found')
+            flash('Inscruction has been sent')
+        flash('No email found')
     return render_template('user/lost.html', form=form)
 
 @app.route('/logout')
@@ -204,15 +197,13 @@ def logout():
     session.pop('username')
     if 'is_admin' in session:
         session.pop('is_admin')
-    flash('logged out from user: %s' % username)
+    flash(f'Logged out from user: {username}')
     return redirect(url_for('index'))
 
 @app.route('/user_setting', methods=['GET', 'POST'])
 @login_required
 def user_setting():
-    user = User.query.filter_by(
-        username = session['username'],
-    ).first()
+    user = User.query.filter_by(username = session['username']).first()
     if user.validated:
         form = RegisterForm(obj=user)
         error = ''
@@ -222,20 +213,18 @@ def user_setting():
             if user.username != form.username.data:
                 user.username = form.username.data
                 session['username'] = user.username
-                flash('loged in as %s' % user.username)
+                flash(f'Logged in as {user.username}')
             user.fullname = form.fullname.data
             user.password = hashedpw
             try:
                 db.session.commit()
-                flash('user data updated')
-                msg = "%s: user update for email:%s" %\
-                      (datetime.now().strftime("%Y/%m/%d-%H:%M:%S"),
-                       user.email)
-                msg += ", new username: %s" % user.username
+                flash('User data updated')
+                msg = f"{datetime.now().strftime('%Y/%m/%d-%H:%M:%S')}:"\
+                        " user update for email: {user.email}" \
+                        ", new username: {user.username}"
                 app.logger.warning(msg)
             except:
-                error = 'new username %s is already taken' % \
-                    form.username.data
+                error = f'New username {form.username.data} is already taken.'
         return render_template('user/user_setting.html', 
             form=form, error=error, user=user
         )

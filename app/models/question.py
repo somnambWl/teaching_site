@@ -1,18 +1,51 @@
-from app import db
+
 from numbers import Number
 from copy import deepcopy
 import numpy as np
 from sympy.parsing.sympy_parser import parse_expr
 import ast
 
-def convert(from_unit, to_unit):
-    from_unit = deepcopy(from_unit)
-    if from_unit.name != to_unit.name:
-        factor = from_unit.SI_value / float(to_unit.SI_value)
-        from_unit._value = from_unit._value * factor
-    return from_unit._value
+from app import db
+
+from app.common.question import convert
+
+# Many-to-many lookup tables:
+# TODO: Make a single file for many-to-many tables
+variable_units = db.Table('variable_units',
+        db.Column('unit_id', db.Integer, db.ForeignKey('unit.id')),
+        db.Column('variable_id', db.Integer, db.ForeignKey('variable.id')),)
+
+question_unit_text = db.Table('question_unit_text',
+        db.Column('unit_id', db.Integer, db.ForeignKey('unit.id')),
+        db.Column('question_id', db.Integer, db.ForeignKey('question.id')))
+
+# Normal tables
+# TODO: Make a single file for each class
 
 class UnitCategory(db.Model):
+    """
+    Definition of UnitCategory - how is every unit composed from SI units.
+
+    Essentially everything what is stored in the database is given in the
+    example below.
+
+    Example
+    -------
+    'unitless':   [ 0,  0,  0,  0,  0,  0,  0]
+    'length':     [ 1,  0,  0,  0,  0,  0,  0]
+    'mass':       [ 0,  1,  0,  0,  0,  0,  0]
+    'time':       [ 0,  0,  1,  0,  0,  0,  0]
+    'charge':     [ 0,  0,  1,  1,  0,  0,  0]
+    'temperatur': [ 0,  0,  0,  0,  1,  0,  0]
+    'mole':       [ 0,  0,  0,  0,  0,  1,  0]
+    'area':       [ 2,  0,  0,  0,  0,  0,  0]
+    'volume':     [ 3,  0,  0,  0,  0,  0,  0]
+    'frequency':  [ 0,  0, -1,  0,  0,  0,  0]
+    'period':     [ 0,  0,  1,  0,  0,  0,  0]
+    'energy':     [ 2,  1, -2,  0,  0,  0,  0]
+    'force':      [ 1,  1, -2,  0,  0,  0,  0]
+    'pressure':   [-1,  1, -2,  0,  0,  0,  0]
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     # SI base units
@@ -23,17 +56,12 @@ class UnitCategory(db.Model):
     K = db.Column(db.Integer)
     mol = db.Column(db.Integer)
     cd = db.Column(db.Integer)
-    variations = db.relationship(
-        'Unit',
-        backref='category', 
-        lazy='dynamic')
+    variations = db.relationship('Unit', backref='category', lazy='dynamic')
 
     def __repr__(self):
         return self.name
 
-    def __init__(self, name='', 
-        m=0, kg=0, s=0, A=0, K=0, mol=0, cd=0
-    ):
+    def __init__(self, name='', m=0, kg=0, s=0, A=0, K=0, mol=0, cd=0):
         self.name = name
         self.m =  m 
         self.kg = kg 
@@ -46,48 +74,37 @@ class UnitCategory(db.Model):
 
     def _get_value(self):
         if not hasattr(self, '_value'):
-            self._value = np.array([
-                self.m,
-                self.kg,
-                self.s,
-                self.A,
-                self.K,
-                self.mol,
-                self.cd,
-            ])
+            self._value = np.array([self.m, self.kg, self.s, self.A, self.K, 
+                    self.mol,self.cd,])
         return self
 
-variable_units = db.Table(
-    'variable_units',
-    db.Column(
-        'unit_id', 
-        db.Integer, 
-        db.ForeignKey('unit.id')),
-    db.Column(
-        'variable_id', 
-        db.Integer, 
-        db.ForeignKey('variable.id')),
-)
-
 class Unit(db.Model):
+    """
+    
+
+    Attributes
+    ----------
+    - id - automatically generated Integer
+    - name - short name used for SQL
+    - fullname - full description in words
+    - face - short name used for LaTeX
+    - SI_value - value of the unit in SI
+    - category_id - ID of UnitCategory (expression in powers of SI units)
+    - active_variables - 
+
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     fullname = db.Column(db.String(100), nullable=False)
     face = db.Column(db.String(100))
     SI_value = db.Column(db.Float)
-    category_id = db.Column(
-        db.Integer, 
-        db.ForeignKey('unit_category.id'),
-        nullable=False)
-    active_variables = db.relationship(
-        'Variable',
-        secondary = variable_units,
-        backref = db.backref('units', lazy='dynamic')
-    )
+    category_id = db.Column(db.Integer, db.ForeignKey('unit_category.id'), 
+            nullable=False)
+    active_variables = db.relationship('Variable', secondary = variable_units,
+            backref = db.backref('units', lazy='dynamic'))
 
-    def __init__(self, 
-        name='', fullname='', face='', SI_value=1., category=None
-    ):
+    def __init__(self, name='', fullname='', face='', SI_value=1., 
+            category=None):
         self.fullname = fullname
         self.name = name
         if not face:
@@ -99,40 +116,35 @@ class Unit(db.Model):
         else:
             try:
                 category_type = UnitCategory.query.filter_by(
-                    name = category,
-                ).first()
+                        name=category).first()
                 if category_type:
                     self.category = category_type
             except:
                 self.category = None
 
     def __repr__(self):
-        return "%s (%s)" % (self.name, self.category.name)
+        return f"{self.name} ({self.category.name})"
  
     def _copy(self):
-        new = Unit(
-            fullname = self.fullname,
-            name = self.name,
-            face = self.face,
-            SI_value = self.SI_value,
-            category = self.category
-        )
+        new = Unit(fullname = self.fullname, name = self.name, 
+                face = self.face, SI_value = self.SI_value, 
+                category = self.category)
         new._value = self._value
         return new
 
     def from_SI(self, value):
-        return float(value) / float(self.SI_value)
+        return value / self.SI_value
 
     def get_face(self):
-        return "%s (%s)" % (self.fullname, self.face)
+        return f"{self.fullname} ({self.face})"
 
     def value(self):
         self._get_value()
-        return float(self._value) * float(self.SI_value)
+        return self._value * self.SI_value
 
     def face_value(self):
         self._get_value()
-        return float(self._value)
+        return self._value
 
     def to(self, other):
         assert type(self) is type(other)
@@ -191,17 +203,13 @@ class Unit(db.Model):
 
             elif operation == '/':
                 new_base = out.category._value - other.category._value
-                SI_value = out.SI_value / float(other.SI_value)
-                _value = out._value / float(other._value)
+                SI_value = out.SI_value / other.SI_value
+                _value = out._value / other._value
 
-            new_unit_category = UnitCategory(
-                new_unit_type,
-                *new_base.tolist()
-            )
-            new_unit = Unit(
-                name = new_unit_name, 
-                category = new_unit_category
-            )
+            new_unit_category = UnitCategory(new_unit_type, 
+                    *new_base.tolist())
+            new_unit = Unit(name = new_unit_name, 
+                    category = new_unit_category)
             new_unit.SI_value = SI_value
             new_unit._value = _value
 
@@ -248,40 +256,43 @@ class Unit(db.Model):
         return out
 
 class Variable(db.Model):
+    """
+
+    Constraints, one of the three below:
+    - tuple string: '(min, max)'
+    - list string: '[value1, value2, value3]'
+    - dict string for dependent variable value: 
+      "{'val1_var1': [value1, value2, value3], 
+      'val2_var1: (min, max)'
+
+    Attributes
+    ----------
+    - id
+    - name
+    - description
+    - category
+    - question_id
+    - constraint
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=False)
-    question_id = db.Column(
-         db.Integer,
-         db.ForeignKey('question.id'))
-
-    # constraints, one of the three below
-    # tuple string: '(min, max)'
-    # list string: '[value1, value2, value3]'
-    # dict string for dependent variable value: 
-    # "{'val1_var1': [value1, value2, value3], 
-    #   'val2_var1: (min, max)'
+    question_id = db.Column(db.Integer, db.ForeignKey('question.id'))
     constraint = db.Column(db.Text)
 
-    def __init__(self,
-        name = '',
-        description = '',
-        category = '',
-        constraint = '',
-        units = '',
-    ):
-        self.name         = name  
-        self.description  = description 
-        self.category     = category
-        self.constraint   = constraint
-        self.units        = units
+    def __init__(self, name='', description='', category='', constraint='', 
+            units=''):
+        self.name = name  
+        self.description = description 
+        self.category = category
+        self.constraint = constraint
+        self.units = units
 
     def __repr__(self):
-        base = "%s %s" % (self.name, self.category)
-        if self.question is not None\
-        or len(self.correct_question) > 0\
-        or len(self.wrong_question) > 0:
+        base = f"{self.name} {self.category}"
+        if self.question is not None or len(self.correct_question) > 0 \
+                or len(self.wrong_question) > 0:
             return base + " (used)"
         else:
             return base + " (available)"
@@ -361,26 +372,11 @@ class Variable(db.Model):
 class QuestionCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    questions = db.relationship(
-        'Question',
-        backref='category',
-        lazy='dynamic',
-    )
+    questions = db.relationship('Question', backref='category', 
+            lazy='dynamic')
 
     def __repr__(self):
         return self.name
-
-question_unit_text = db.Table(
-    'question_unit_text',
-    db.Column(
-        'unit_id',
-        db.Integer,
-        db.ForeignKey('unit.id')),
-    db.Column(
-        'question_id',
-        db.Integer,
-        db.ForeignKey('question.id')),
-)
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -389,41 +385,24 @@ class Question(db.Model):
     answer_command = db.Column(db.Text)
     no_answer = db.Column(db.Boolean, default=False)
     # relationship with question
-    category_id = db.Column(
-        db.Integer,
-        db.ForeignKey('question_category.id'))
-
-    text_variables = db.relationship(
-        'Variable',
-        backref = 'question',
-        primaryjoin = 'Question.id==Variable.question_id',
-        lazy='dynamic')
-
-    answer_units = db.relationship(
-        'Unit',
-        secondary = question_unit_text,
-        backref = db.backref('answer_questions', lazy='dynamic')
-    )
-
-    correct_variable_id = db.Column(db.Integer, 
-        db.ForeignKey('variable.id'))
-    correct_variable = db.relationship(
-        Variable, 
-        backref = db.backref('correct_question', order_by=id),
-        foreign_keys=correct_variable_id)
-
-    wrong_variable_id = db.Column(db.Integer, 
-        db.ForeignKey('variable.id'))
-    wrong_variable = db.relationship(
-        Variable, 
-        backref = db.backref('wrong_question', order_by=id),
-        foreign_keys=wrong_variable_id)
+    category_id = db.Column(db.Integer, db.ForeignKey('question_category.id'))
+    text_variables = db.relationship('Variable', backref = 'question', 
+            primaryjoin = 'Question.id==Variable.question_id', lazy='dynamic')
+    answer_units = db.relationship('Unit', secondary = question_unit_text,
+            backref = db.backref('answer_questions', lazy='dynamic'))
+    correct_variable_id = db.Column(db.Integer, db.ForeignKey('variable.id'))
+    correct_variable = db.relationship(Variable, 
+            backref=db.backref('correct_question', order_by=id),
+            foreign_keys=correct_variable_id)
+    wrong_variable_id = db.Column(db.Integer, db.ForeignKey('variable.id'))
+    wrong_variable = db.relationship(Variable, 
+            backref=db.backref('wrong_question', order_by=id), 
+            foreign_keys=wrong_variable_id)
 
     def __init__(self, name='', body='', answer_command='',
-        category_id = None, text_variables=[], correct_variable_id = None,
-        correct_variable = None, wrong_variable_id = None,
-        wrong_variable = None, answer_units=[],
-    ):
+            category_id = None, text_variables=[], correct_variable_id = None,
+            correct_variable = None, wrong_variable_id = None,
+            wrong_variable = None, answer_units=[]):
         self.name = name
         self.body = body
         self.answer_command = answer_command
@@ -440,17 +419,13 @@ class Question(db.Model):
             self.text_variables = text_variables
         self.correct_variable_id = correct_variable_id
         if type(correct_variable) is str:
-            var = Variable.query.filter_by(
-                name = correct_variable
-            ).first()
+            var = Variable.query.filter_by(name=c_orrect_variable).first()
             self.correct_variable = var
         else:
             self.correct_variable = correct_variable
         self.wrong_variable_id = wrong_variable_id
         if type(wrong_variable) is str:
-            var = Variable.query.filter_by(
-                name = wrong_variable
-            ).first()
+            var = Variable.query.filter_by(name=wrong_variable).first()
             self.wrong_variable = var
         else:
             self.wrong_variable = wrong_variable
@@ -458,7 +433,7 @@ class Question(db.Model):
 
     def __repr__(self):
         if self.category:
-            return "%s %s" % (self.category.name, self.name)
+            return "{self.category.name} {self.name}"
         else:
             return self.name
 

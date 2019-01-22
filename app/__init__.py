@@ -27,7 +27,7 @@ except IOError:   #There is no local configuration file
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 # Import modules (i.e. tables in db)
-from app.models import user
+from app.models import user, question, exercise
 
 
 mail = Mail(app)

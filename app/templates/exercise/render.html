@@ -3,15 +3,22 @@
 {% block title %} - {{ exercise.name.title() }}{% endblock %}
 
 {% block content %}
+<!-- Exercise title -->
 <h2>{{ exercise.name.title() }}</h2>
+<!-- Messages -->
 {% include '_errormessages.html'%}
 {% include '_flashmessages.html'%}
 
 {% from "_formhelper.html" import render_field %}
 
-<form method="POST" action="{{ url_for('exercise', id=exercise.id, seed=seed) }}" role="form">
+<!-- Exercise formular -->
+<!-- ----------------- -->
+<form method="POST" action="{{ url_for('exercise', id=exercise.id, seed=seed) 
+	}}" role="form">
 {% set itr = 1 %}
+<!-- Go through question list-->
 {% for question in question_list %}
+ <!-- Render a header and a description for each question in the list -->
  {% if itr-1 in type_dict %}
   {% if type_dict[itr-1] == 'single' %}
    <h3>Multiple choice</h3>
@@ -33,8 +40,10 @@
   {% elif type_dict[itr-1] == 'no_answer' %}
    <h3>Derivation and discussion</h3>
   {% endif %}
- {% endif %}
+ {% endif %} <!-- End of rendering question headers -->
  <hr>
+ <!-- We are still in the for cycle going through question list -->
+ <!-- Now render the question name -->
  <p> <label>Question {{itr}}</label>: {{ question.name }}</p>
  <p>
   {{ question.render(seed)[0] }}
@@ -44,7 +53,8 @@
  {% set point = points[itr-1] %}
  {% set form = forms[itr-1] %}
  {{ form.hidden_tag() }}
- {% if question.no_answer %}
+ <!-- Render answer options -->
+ {% if question.no_answer %} <!-- Question with no answer -->
   <label>No answer required</label>
  {% elif question.render(seed)[1]|length > 1 %}
   {% if question.evaluate(seed)|length > 1 %}
@@ -60,7 +70,8 @@
    {{ render_checkbox(form.option5,options,4,disabled=readonly) }}
    </div>
    </div>
-  {% elif question.evaluate(seed)|length == 1 %}
+  {% elif question.evaluate(seed)|length == 1 %} <!-- Question with at least
+	  one answer -->
    {% from "_formhelper.html" import render_radio %}
    {% set options = question.render(seed)[1] %}
    {% set qid = question.id %}
@@ -73,17 +84,18 @@
    </div>
    </div>
   {% endif %}
- {% else %}
+	{% else %} <!-- Question with numerical answer -->
      {{ render_field(form.number, class='form-control',disabled=readonly) }}
  {% endif%}
- {% if ans_msgs %}
+ {% if ans_msgs %} <!-- Question with plaintext answer -->
  <p class={{status}}>{{ ans_msg }}</p>
  {% endif %}
-{% set itr = itr + 1 %}
-{% endfor %}
+<!-- Increase the iterator value, iterate over the next question -->
+{% set itr = itr + 1 %} 
+{% endfor %} <!-- End of FOR cycle through question list -->
 <hr>
 <div class="row">
-  {% if practice %}
+	{% if practice %} <!-- Only exercise sheet -->
   <div class='col-md-6'>
     <button type="submit" class="btn btn-default" name='save'>Evaluate</button>
   </div>
@@ -92,7 +104,7 @@
       <label>Practice page</label>
     </p>
   </div>
-  {% else %}
+	{% else %} <!-- Test sheet -->
   <div class='col-md-6'>
     <p>
     <button type="submit" class="btn btn-default" name='save'>Save</button>

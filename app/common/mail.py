@@ -1,3 +1,8 @@
+import time
+import os
+
+from flask_mail import Mail, Message
+
 from app import mail
 
 def send_email(recipients, title, body):

@@ -7,6 +7,25 @@ from numpy.random import randint
 from app import db
 
 class User(db.Model):
+    """
+    Definition of table for users.
+
+    The information we store about each user are their ID, their full name,
+    email, username, password, temporary password, validation code, if they 
+    are validated already, if they are admin and their random seed.
+
+    User can log in using both password and temporary password, however
+    temporary password is usually set to '' and this is unacceptable as
+    password. When they forget their password, temporary password can be set
+    and after its first use it is set to '' again and users are asked to set a
+    new password. 
+
+    Validation code is used only once, afterwards validated is set to True.
+
+    Random seed is stored in the database too, because we want to use the same
+    seed for the same user everytime. This way, all students will have
+    different questions randomized using their personal random seed.
+    """
     id = db.Column(db.Integer, primary_key = True)
     fullname = db.Column(db.String(30))
     email = db.Column(db.String(50), unique = True)
@@ -18,9 +37,9 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean)
     random_seed = db.Column(db.Integer)
 
-    def __init__(self, fullname='', email='', username='', 
-                 password='', is_admin='', validated='',
-                 validation_code = None, password_tmp = ''):
+    def __init__(self, fullname='', email='', username='', password='', 
+            is_admin='', validated='', validation_code = None, 
+            password_tmp = ''):
         self.fullname = fullname
         self.email = email
         self.username = username

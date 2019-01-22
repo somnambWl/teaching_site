@@ -17,82 +17,100 @@ from jinja2 import Markup
 # Import app
 from app import app, admin, db
 from app.models.user import User
-#from app.models.question import UnitCategory, Unit, Variable, \
-#        QuestionCategory, Question
-#from app.models.exercise import Exercise, Sheet
-#from app.common.tools import evaluate
+from app.models.question import UnitCategory, Unit, Variable, \
+        QuestionCategory, Question
+from app.models.exercise import Exercise, Sheet
+from app.common.tools import evaluate
 
-#def is_admin():
-#    is_admin = False
-#    if 'username' in session:
-#        user = User.query.filter_by(
-#            username = session['username']
-#        ).first()
-#        if user:
-#            is_admin = user.is_admin
-#    return is_admin
-#
-#def get_user():
-#    if 'username' in session:
-#        user = User.query.filter_by(
-#            username = session['username']
-#        ).first()
-#        return user
-#
-#class BaseView(ModelView):
-#    def is_accessible(self):
-#        return is_admin()
-#    def inaccessible_callback(self, name, **kwargs):
-#        return redirect(url_for('index'))
-#
-#class UserView(BaseView):
-#
-#    @action("ban_user", "Ban user", "Ban selected users?")
-#    def ban_user(self, ids):
-#        for id in ids:
-#            user = User.query.filter_by(id=id).first()
-#            user.validated = False
-#            need_new_valid = True
-#            while need_new_valid:
-#                alphanum = string.ascii_letters + string.digits
-#                new_valid = ''.join(choice(alphanum) for _ in range(6))
-#                if new_valid != user.validation_code:
-#                    user.validation_code = new_valid
-#                    need_new_valid = False
-#            try:
-#                db.session.commit()
-#            except:
-#                error = "Ban user can not be saved."
-#        flash("%d users baned" % len(ids))
-#
-#    column_list = ('fullname', 'email', 
-#        'username', 'validated', 'is_admin')
-#    column_searchable_list = ('username', 'email', 'fullname')
-#    column_labels = {
-#        'fullname': 'Full name',
-#        'email': 'Email',
-#        'username': 'Username',
-#        'password_tmp': '1-time Password',
-#        'random_seed': 'Random seed',
-#        'validation_code': 'Validation code',
-#        'validated': 'Validated',
-#        'is_admin': 'Admin',
-#    }
-#    form_rules = ('fullname', 'email', 'username', 
-#        'password_tmp', 'random_seed', 'validation_code', 
-#        'validated', 'is_admin')
-#
-#    def on_model_change(self, form, User):
-#        if not form.random_seed.data:
-#            User.random_seed = 42
-#            flash('set random seed to 42')
-#        if hasattr(form, 'password'):
-#            if form.password.data:
-#                User.password = form.password.data
-#            else:
-#                del form.password.data
-#
-#
+def is_admin():
+    """
+    Check whether currently logged user is admin.
+
+    Returns
+    -------
+    bool:
+        True if user is logged and is admin, else False
+    """
+    is_admin = False
+    if 'username' in session:
+        user = User.query.filter_by(username=session['username']).first()
+        if user:
+            is_admin = user.is_admin
+    return is_admin
+
+def get_user():
+    """
+    Get currently logged user.
+
+    Returns
+    -------
+    User: object
+    """
+    if 'username' in session:
+        user = User.query.filter_by(username = session['username']).first()
+        return user
+
+class BaseView(ModelView):
+    """
+    Definition of basic view from which all others admin views will inherit. 
+    This prevents non-admin users from messing up with the database and
+    redirects them to the homepage.
+    """
+    def is_accessible(self):
+        return is_admin()
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('index'))
+
+class UserView(BaseView):
+    """
+    An admin view for User table.
+    """
+    column_list = ('fullname', 'email', 'username', 'validated', 'is_admin')
+    column_searchable_list = ('username', 'email', 'fullname')
+    column_labels = {
+            'fullname': 'Full name',
+            'email': 'Email',
+            'username': 'Username',
+            'password_tmp': '1-time Password',
+            'random_seed': 'Random seed',
+            'validation_code': 'Validation code',
+            'validated': 'Validated',
+            'is_admin': 'Admin'}
+    form_rules = ('fullname', 'email', 'username', 
+            'password_tmp', 'random_seed', 'validation_code', 
+            'validated', 'is_admin')
+
+    @action("ban_user", "Ban user", "Ban selected users?")
+    def ban_user(self, ids):
+        """
+        Ban users by generating a new validation code for them.
+        """
+        for id in ids:
+            user = User.query.filter_by(id=id).first()
+            user.validated = False
+            need_new_valid = True
+            while need_new_valid:
+                alphanum = string.ascii_letters + string.digits
+                new_valid = ''.join(choice(alphanum) for _ in range(6))
+                if new_valid != user.validation_code:
+                    user.validation_code = new_valid
+                    need_new_valid = False
+            try:
+                db.session.commit()
+            except:
+                error = "Ban user can not be saved."
+        flash(f"{len(ids)} users banned.")
+
+    def on_model_change(self, form, User):
+        if not form.random_seed.data:
+            User.random_seed = 42
+            flash('set random seed to 42')
+        if hasattr(form, 'password'):
+            if form.password.data:
+                User.password = form.password.data
+            else:
+                del form.password.data
+
 #class QuestionView(BaseView):
 #    def _question_formatter(view, context, model, name):
 #        return Markup(
@@ -328,7 +346,20 @@ from app.models.user import User
 #    admin.add_view(SheetView(Sheet, db.session))
 #    admin.add_view(UnitView(Unit, db.session))
 #    admin.add_view(UnitCategoryView(UnitCategory, db.session))
-admin.add_view(ModelView(User, db.session))
+
+admin.add_view(UserView(User, db.session))
+
+# Basic views
+#admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(Exercise, db.session))
+admin.add_view(ModelView(Question, db.session))
+admin.add_view(ModelView(QuestionCategory, db.session))
+admin.add_view(ModelView(Variable, db.session))
+admin.add_view(ModelView(Sheet, db.session))
+admin.add_view(ModelView(Unit, db.session))
+admin.add_view(ModelView(UnitCategory, db.session))
+
+
 admin.add_link(MenuLink(name='Home', category='Links', url='/index'))
 admin.add_link(MenuLink(name='Logout', category='Links', url='/logout'))
 admin.add_link(MenuLink(name='Re-evaluate all', category='Links', url='/reevaluate'))
