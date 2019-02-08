@@ -23,6 +23,7 @@ class Exercise(db.Model):
             backref=db.backref('exercises', lazy='dynamic'))
 
     def __repr__(self):
+        print(f"Returning exercise name {self.name}")
         return self.name
 
 class Sheet(db.Model):

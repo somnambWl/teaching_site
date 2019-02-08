@@ -5,6 +5,8 @@ import numpy as np
 from sympy.parsing.sympy_parser import parse_expr
 import ast
 
+from flask import flash
+
 from app import db
 
 from app.common.question import convert
@@ -349,14 +351,14 @@ class Variable(db.Model):
         if self.category != 'unit':
             value = self.draw(seed)
             if 100 > value and value >= 1:
-                value = "%.2f" % value
+                value = f"{value:.2f}"
             elif 1 > value and value >= 0.1:
-                value = "%.4f" % value
+                value = f"{value:.4f}"
             else:
-                value = "%9.3E" % value
+                value = f"{value:9.3E}"
             if hasattr(self, 'units') and len(self.units.all()) > 0:
                 unit = rs.choice(self.units.all())
-                value = value + " %s" % unit.name
+                value = f"{value} {unit.name}"
             return value
         else:
             unit = rs.choice(self.units.all())
@@ -433,7 +435,7 @@ class Question(db.Model):
 
     def __repr__(self):
         if self.category:
-            return "{self.category.name} {self.name}"
+            return f"{self.category.name}-{self.name}"
         else:
             return self.name
 
@@ -457,30 +459,61 @@ class Question(db.Model):
         option_list = []
         if self.correct_variable and self.wrong_variable:
             option_list = []
-            correct_list = rs.permutation(
-                self.correct_variable.get_list()
-            ).tolist()
-            wrong_list = rs.permutation(
-                self.wrong_variable.get_list()
-            ).tolist()
+            correct_list = rs.permutation(self.correct_variable.get_list()
+                    ).tolist()
+            wrong_list = rs.permutation(self.wrong_variable.get_list()
+                    ).tolist()
             ind = rs.randint(0, len(correct_list))
             option_list.append(correct_list.pop(ind))
             correct_list.extend(wrong_list)
-            option_list.extend(
-                rs.permutation(correct_list)[:options - 1]
-            )
+            option_list.extend(rs.permutation(correct_list)[:options - 1])
         return text, rs.permutation(option_list)
             
+    #TODO: Change the name to substitute_variables
+    # This is really confusing, as evaluate is also used for evaluating the
+    # answer
     def evaluate(self, seed):
-        qseed = seed + self.id
-        rs = np.random.RandomState(qseed)
+        """
+        Go through the question and using unique random seeds replace all
+        variables with exact values.
+
+        Parameters
+        ----------
+        seed : int
+            Unique user's seed
+        """
+        qseed = seed + self.id   # Form a random seed  
+        rs = np.random.RandomState(qseed)   # Initialize random state
         if self.answer_command:
             answer = self.answer_command
+            print("Answer before substitution")
+            print(answer)
+            # Replace every variable with a random value
             for i in range(len(self.text_variables.all())):
                 var = self.text_variables[i]
-                name = '_' + var.name + '_'
+                print(f"Variable is {var}")
+                print(f"Variable name is {var.name}")
+                name = f"_{var.name}_"
                 answer = answer.replace(name, str(var.value(qseed+i)))
-            SI_answer = float(parse_expr(answer))
+                print(f"Replaced {name} with {var.value(qseed+i)}")
+                print(answer)
+            print("Answer after substitution")
+            print(answer)
+            try:
+                a = parse_expr(answer)
+                print(f"A: {a}")
+                SI_answer = float(parse_expr(answer))
+            except TypeError:
+                print("ERROR: At models/question.py-Question.evaluate")
+                print("ERROR: One of variables in question " \
+                        f"{self.category}-{self.name} is in incorrect " \
+                        "format or you maybe forgot \\ somewhere. You should "
+                        "login as admin and check types of variables in this "
+                        "question and if function use \\ like \\cos().")
+                flash("There is an error on this page, your answer may not be"
+                        " saved, please report to system administrator.")
+                SI_answer = "ERROR!"
+            # If the answer require units, add units to the answer.
             if self.answer_units:
                 unit_rs = np.random.RandomState(qseed+1)
                 unit = unit_rs.choice(self.answer_units)

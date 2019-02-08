@@ -5,66 +5,53 @@ import numpy as np
 from app import db
 
 def evaluate(question, sheet, seed, commit=True):
-    print("evaluate is running")
-
+    print()
+    print("Evaluation is running.")
     error = None
     point = 0.0
     status = 'text-danger'
     ans_msg = "You did not answer this question."
-    answer =  question.evaluate(seed)
+    # Get correct answer of the question with given seed.
+    answer = question.evaluate(seed)
+    print(f"Correct answer is {answer}")
+    print(f"Correct answer type is {type(answer)}")
     if type(answer) is float:
-        print("answ float")
+        print("Answer type is float")
         print(sheet.number)
         if sheet.number:
-            print("sheet")
+            print(f"Sheet number is {sheet.number}")
             tried = float(sheet.number)
             if answer == 0 and abs(tried) < 1E-3:
                 point = 1.0
                 ans_msg = "Your answer is correct!"
-                print("answer 0")
                 status = 'text-success'
-            elif answer != 0\
-            and abs((tried - answer)/answer) < 0.1:
-                print("divide")
-                print("answer 1")
+            elif answer != 0 and abs((tried - answer)/answer) < 0.1:
                 point = 1.0
                 ans_msg = "Your answer is correct!"
                 status = 'text-success'
             else:
-                ans_msg = "The correct answer is %E," % answer\
-                          + " but you have entered %E." % tried
+                ans_msg = f"The correct answer is {answer}," \
+                        " but you have entered {tried}."
         else:
             ans_msg = "You did not answer this question."
-            print("sheet2")
     else:
         answer = np.array(answer)
-        mask = np.array([
-            sheet.option1,
-            sheet.option2,
-            sheet.option3,
-            sheet.option4,
-            sheet.option5,
-        ])
+        mask = np.array([sheet.option1, sheet.option2, sheet.option3, 
+                sheet.option4, sheet.option5,])
         for m in range(len(mask)):
             if mask[m] is None:
                 mask[m] = False
-
         n_options = len(question.render(seed)[1])
-
         choice = np.ma.masked_array(np.arange(1,6), ~mask)
         tried = np.array([c for c in choice[:n_options] if c])-1
         tried = tried.tolist()
-
         if len(answer) > 1:
-
-            if not (sheet.option1 or sheet.option2 \
-            or sheet.option3 or sheet.option4 or sheet.option5):
-
-                if not question.no_answer:
+            if not (sheet.option1 or sheet.option2 or sheet.option3 \
+                    or sheet.option4 or sheet.option5):
+                if not question.no_answer:   # If the question has an answer
                     point = 0
                     ans_msg = "You did not answer this question."
                     status = "text-danger"
-                 
             else:
                 corrects = 0
                 for j in range(n_options):
@@ -80,14 +67,12 @@ def evaluate(question, sheet, seed, commit=True):
                     ans_msg = "Your answer is correct!"
                     status = 'text-success'
                 else:
-                    ans_msg = "The correct answer is options: %d" \
-                              % (answer[0] + 1)
+                    ans_msg = f"The correct answer is options: {(answer[0] + 1)}"
                     for j in answer[1:]:
-                        ans_msg += ", %d" % (j + 1)
-                    ans_msg += ", but you chose options: %d" \
-                               % (tried[0] + 1)
+                        ans_msg += f", {(j + 1)}"
+                    ans_msg += f", but you chose options: {(tried[0] + 1)}"
                     for j in tried[1:]:
-                        ans_msg += ", %d" % (j + 1)
+                        ans_msg += f", {(j + 1)}" 
                     ans_msg += '.'
                     status = 'text-warning'
                     if point <= 0:
@@ -100,19 +85,15 @@ def evaluate(question, sheet, seed, commit=True):
                     status = 'text-success'
                 else:
                     point = -1. / (n_options - 1)
-                    ans_msg = "The correct answer is options: %d" \
-                              % (answer[0] + 1)
-                    ans_msg += ", but you chose options: %d" \
-                               % (tried[0] + 1)
-
-    ans_msg += " You've got %4.2f point." % (round(point, 3))
-
+                    ans_msg = f"The correct answer is options: {(answer[0] + 1)}"
+                    ans_msg += f", but you chose options: {(tried[0] + 1)}"
+    ans_msg += f" You've got {(round(point, 3)):4.2f} point."
     sheet.point = point
-
     if commit:
         try:
             db.session.commit()
         except:
-            error = "Evaluated results can not be saved, " +\
-                    " please contact course administrator."
+            error = "Evaluated results can not be saved, " \
+                    "please contact course administrator."
+    print()
     return point, status, ans_msg, error

@@ -18,16 +18,13 @@ from app.common.tools import evaluate
 @admin_required
 def reevaluate(id=None):
     if id is None:
-        flash('reevaluate all exercise sheets')
-    
+        flash('Reevaluate all exercise sheets')
         for sheet in Sheet.query.all():
             evaluate(sheet.question, sheet, sheet.user.random_seed)
     else:
         sheet = Sheet.query.filter_by(id=id).first()
-        flash('reevaluate sheet for user %s' % sheet.user)
+        flash(f"Reevaluate sheet for user {sheet.user}")
         evaluate(sheet.question, sheet, sheet.user.random_seed)
-        
-
     return redirect('admin/sheet')
     
 
@@ -35,14 +32,9 @@ def reevaluate(id=None):
 @app.route('/render/<int:id>/<int:seed>')
 @admin_required
 def render(id, seed=None):
-    render_name = 'render single question'
-    question = Question.query.filter_by(
-        id=id
-    ).first()
-    
-    exercise = Exercise.query.filter_by(
-        name = render_name,
-    ).first()
+    render_name = 'Render a single question'
+    question = Question.query.filter_by(id=id).first()
+    exercise = Exercise.query.filter_by(name=render_name).first()
     if exercise:
         setattr(exercise, 'open_date', 
             datetime.today() - relativedelta(months=1)),
@@ -51,18 +43,15 @@ def render(id, seed=None):
         setattr(exercise, 'questions', [question])
     else:
         exercise = Exercise(
-            name = render_name,
-            open_date = datetime.today() - relativedelta(months=1),
-            close_date = datetime.today() + relativedelta(months=1),
-            active = False,
-            questions = [question]
-        )
+                name = render_name,
+                open_date = datetime.today() - relativedelta(months=1),
+                close_date = datetime.today() + relativedelta(months=1),
+                active = False,
+                questions = [question])
         db.session.add(exercise)
     db.session.commit()
     if seed is None:
-        user = User.query.filter_by(
-            username = session['username']
-        ).first()
+        user = User.query.filter_by(username = session['username']).first()
         seed = user.random_seed
     return redirect(url_for('exercise', id=exercise.id, seed=seed))
 
@@ -72,27 +61,25 @@ def render(id, seed=None):
 @app.route('/exercise/<int:id>/<int:seed>', methods=['GET', 'POST'])
 @login_required
 def exercise(id=None, seed=None):
-
     error = None
     flashed = False
     last_edited = True
     submit = False
     submitted = False
-
-    if id is None:
-        return redirect(url_for('index'))
-    exercise = Exercise.query.filter_by(
-        id=id,
-    ).first_or_404()
-    user = User.query.filter_by(
-        username = session['username']
-    ).first()
-
+    if id is None:   # If there is no exercise with such an ID 
+        return redirect(url_for('index'))   # Go back to the main page
+    # Get the exercise by the ID
+    exercise = Exercise.query.filter_by(id=id).first_or_404()
+    # Get user by their username
+    user = User.query.filter_by(username=session['username']).first()
+    # User has to be validated to do exercises
     if not user.validated:
         return redirect(url_for('validate'))
-
+    # The exercise has to be active, users can not do them after 
+    # the time limit for an exercise runned out.
     if not exercise.active and not user.is_admin:
         abort(404)
+    # However, if user is an admin, he can view an exercise anytime.
     if user.is_admin:
         msg = 'Admin message: '
         if exercise.active:
@@ -103,36 +90,31 @@ def exercise(id=None, seed=None):
         else:
             msg += 'Not visible exercise'
             flash(msg)
-
     kwargs = {
-        'exercise': exercise,
-        'id': id,
-        'readonly': True,
-    }
-
+            'exercise': exercise,
+            'id': id,
+            'readonly': True}
     now = datetime.now()
     practice = False
-
     if seed is None:
         seed = user.random_seed
     elif now > exercise.close_date or user.is_admin:
         practice = True
         kwargs['readonly'] = False
-
     if seed and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
             practice = True
             kwargs['readonly'] = False
-
-    forms = []
-    status_list = []
-    points = []
-    ans_msgs = []
-
-    optional_list = []
-    numerical_list = []
-    single_choice_list = []
-    no_answer_list = []
+    forms = list()
+    status_list = list()
+    points = list()
+    ans_msgs = list()
+    # Prepare lists for sorting questions by type
+    optional_list = list()
+    numerical_list = list()
+    single_choice_list = list()
+    no_answer_list = list()
+    # Go through questions in an exercise and sort them by type
     for q in exercise.questions:
         answer = q.evaluate(seed)
         if q.no_answer:
@@ -141,64 +123,61 @@ def exercise(id=None, seed=None):
             numerical_list.append(q)
         elif len(answer) == 1:
             single_choice_list.append(q)
+            #TODO: Following line unnecessary?
             q._options = [False for _ in range(5)]
         else:
             optional_list.append(q)
-
-    qlists = [
-        single_choice_list, 
-        optional_list, 
-        numerical_list, 
-        no_answer_list,
-    ]
-    qkeys = [
-        'single', 'optional', 'numerical', 'no_answer'
-    ]
-    type_dict = {}
+    # Now, when questions are sorted by type, create a dict
+    # in which for every key is number of questions of the given type
+    qlists = [single_choice_list, optional_list, numerical_list, 
+            no_answer_list]
+    qkeys = ['single', 'optional', 'numerical', 'no_answer']
+    type_dict = dict()
     type_length = 0
-    for i in range(len(qlists)):
-        qlist = qlists[i]
+    for i, qlist in enumerate(qlists):
         qlist.sort(key=lambda q: q.id)
         key = qkeys[i]
-        if len(qlist) > 0:
+        if len(qlist) > 0:   # If there is at least one question of given type
             type_dict[type_length] = key
             type_length = type_length + len(qlist)
-    kwargs['type_dict'] = type_dict
-
+    # Merge lists of questions
     question_list = single_choice_list
     question_list.extend(optional_list)
     question_list.extend(numerical_list)
     question_list.extend(no_answer_list)
+    # Prepare dictionary for output
+    kwargs['type_dict'] = type_dict
     kwargs['question_list'] = question_list
-
+    # Now we should have a dictionary of indices of first questions of a given
+    # type. So for example if there is five questions with single answer and
+    # then three answer with numerical answer, the dict will look like
+    # {'single':0, 'numerical':5} and in the question list, there will be five
+    # questions with single answer and three with numerical answer
     flash_date = False
-    for i in range(len(question_list)):
-
-        question = question_list[i]
-
+    # Now cycle through questions
+    for i, question in enumerate(question_list):
         ans_msg = ''
         status= ''
-
-        if not practice:
+        if not practice:   # If the exercise is not for practise
+            # Search if user already filled it
             sheet = Sheet.query.filter_by(
-                user_id = user.id,
-                exercise_id = exercise.id,
-                question_id = question.id
-            ).first()
+                    user_id = user.id,
+                    exercise_id = exercise.id,
+                    question_id = question.id).first()
+            # If user already filled it inform him of last date of editation
             if sheet and sheet.edit_date and not flash_date:
-                flash('Your answer was editted on %s. ' % \
-                      sheet.edit_date.strftime("%Y/%m/%d, %H:%M"))
+                flash("Your answer was editted on " \
+                      f"{sheet.edit_date.strftime('%Y/%m/%d, %H:%M')}"
                 flash_date = True
-        else:
-            sheet = False
-
+        else:   # If the exercise is for practise, we do not save results
+            sheet = False   # .. so no info about last editation
+        # If the user have never done this exercise before, 
+        # create a new sheet for them.
         if not sheet and not question.no_answer:
             sheet = Sheet(
-                user_id = user.id,
-                exercise_id = exercise.id,
-                question_id = question.id
-            )
-
+                    user_id = user.id,
+                    exercise_id = exercise.id,
+                    question_id = question.id)
         if not question.no_answer:
             if sheet.point is not None:
                 submitted = True
@@ -216,18 +195,16 @@ def exercise(id=None, seed=None):
                     last_edited = False
             except:
                 pass
-
-        name = 'form%d' % i
+        name = 'form{i}'
         form = QuestionForm(
-            exercise_id = exercise.id,
-            question_id = question.id,
-            user_id = user.id,
-            prefix = name,
-            obj = sheet
-        )
+                exercise_id = exercise.id,
+                question_id = question.id,
+                user_id = user.id,
+                prefix = name,
+                obj = srheet)
         forms.append(form)
-        if (now > exercise.open_date and now < exercise.close_date)\
-        or practice and not submitted:
+        if (now > exercise.open_date and now < exercise.close_date) \
+                or practice and not submitted:
             if not submitted:
                 kwargs['readonly'] = False
             if form.validate_on_submit() and not question.no_answer:
@@ -244,7 +221,7 @@ def exercise(id=None, seed=None):
                     sheet.option4 = form.option4.data
                     sheet.option5 = form.option5.data
                 else:
-                    rname = 'radio_%d' % question.id
+                    rname = 'radio_{question.id}'
                     try:
                         ans = int(request.form[rname].split('_')[-1])
                     except:
@@ -268,7 +245,6 @@ def exercise(id=None, seed=None):
                     question._options[ans] = True
                 edit_time = datetime.now()
                 sheet.edit_date = edit_time
-
                 if not practice and not submitted:
                     try:
                         db.session.add(sheet)
@@ -276,7 +252,6 @@ def exercise(id=None, seed=None):
                     except:
                         error = "Answer can not be saved..., " +\
                                 "please contact course administrator"
-        
                     if sheet.id:
                         db.session.commit()
                         if not flashed:
@@ -288,23 +263,19 @@ def exercise(id=None, seed=None):
                                 flash('Your answer has been submitted')
                             flashed = True
                         if sheet.number is not None:
-                            ans_msg = "Your answer %e was saved." \
-                                % (sheet.number)
+                            ans_msg = f"Your answer {sheet.number} was saved."
                             status = 'text-info'
-                        elif sheet.option1 or sheet.option2 \
-                        or sheet.option3 or sheet.option4 \
-                        or sheet.option5:
+                        elif sheet.option1 or sheet.option2 or sheet.option3 \
+                                or sheet.option4 or sheet.option5:
                             mask = np.array([
-                                sheet.option1,
-                                sheet.option2,
-                                sheet.option3,
-                                sheet.option4,
-                                sheet.option5,
-                            ])
+                                    sheet.option1,
+                                    sheet.option2,
+                                    sheet.option3,
+                                    sheet.option4,
+                                    sheet.option5])
                             for m in range(len(mask)):
                                 if mask[m] is None:
                                     mask[m] = False
-                             
                             choice = np.ma.masked_array(
                                 np.arange(1,6), ~mask)
                             n_options = len(
@@ -347,10 +318,9 @@ def exercise(id=None, seed=None):
                 commit = True
                 if practice or submitted:
                     commit = False
-                point, status, ans_msg, error = \
-                    evaluate(question, sheet, seed, commit)
+                point, status, ans_msg, error = evaluate(question, sheet, 
+                        seed, commit)
                 points.append(round(point, 3))
-    
             if not practice:
                 if now > exercise.close_date:
                     if not flashed:
@@ -360,21 +330,20 @@ def exercise(id=None, seed=None):
                     if not flashed:
                         flash('You have already submitted.')
                         flashed = True
-
             else:
                 if not flashed:
                     flash('Practice results will not be saved.')
                     flashed = True
-                
         if now < exercise.open_date:
            if not flashed:
-               error = "Exercise not is opened yet, "\
-                       + "it is set to be open on %s"\
-                       % exercise.open_date.strftime("%Y/%m/%d, %H:%M")
+               error = "Exercise not is opened yet, " \
+                       "it is set to be open on " \
+                       f"{exercise.open_date.strftime('%Y/%m/%d, %H:%M')}"
                flashed = True
         status_list.append(status)
         ans_msgs.append(ans_msg)
-
+    # End of cycle through questions
+    # Prepare the output
     kwargs['status_list'] = status_list
     kwargs['points'] = points
     kwargs['ans_msgs'] = ans_msgs
