@@ -472,7 +472,7 @@ class Question(db.Model):
     #TODO: Change the name to substitute_variables
     # This is really confusing, as evaluate is also used for evaluating the
     # answer
-    def evaluate(self, seed):
+    def substitute_variables(self, seed):
         """
         Go through the question and using unique random seeds replace all
         variables with exact values.

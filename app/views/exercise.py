@@ -116,7 +116,7 @@ def exercise(id=None, seed=None):
     no_answer_list = list()
     # Go through questions in an exercise and sort them by type
     for q in exercise.questions:
-        answer = q.evaluate(seed)
+        answer = q.substitute_variables(seed)
         if q.no_answer:
             no_answer_list.append(q)
         elif type(answer) is float:
@@ -150,12 +150,18 @@ def exercise(id=None, seed=None):
     kwargs['question_list'] = question_list
     # Now we should have a dictionary of indices of first questions of a given
     # type. So for example if there is five questions with single answer and
-    # then three answer with numerical answer, the dict will look like
+    # then three answers with a numerical answer, the dict will look like
     # {'single':0, 'numerical':5} and in the question list, there will be five
     # questions with single answer and three with numerical answer
     flash_date = False
     # Now cycle through questions
+    print("Questions info")
     for i, question in enumerate(question_list):
+        print(i, question)
+    for i, question in enumerate(question_list):
+        print()
+        print(f"{i}-th question {question}")
+        print()
         ans_msg = ''
         status= ''
         if not practice:   # If the exercise is not for practise
@@ -166,18 +172,19 @@ def exercise(id=None, seed=None):
                     question_id = question.id).first()
             # If user already filled it inform him of last date of editation
             if sheet and sheet.edit_date and not flash_date:
-                flash("Your answer was editted on " \
-                      f"{sheet.edit_date.strftime('%Y/%m/%d, %H:%M')}"
+                flash("Your answer was edited on " \
+                      f"{sheet.edit_date.strftime('%Y/%m/%d, %H:%M')}")
                 flash_date = True
         else:   # If the exercise is for practise, we do not save results
             sheet = False   # .. so no info about last editation
         # If the user have never done this exercise before, 
         # create a new sheet for them.
+        # FIXME: If practice==True -> sheet == False --> new sheet is created
         if not sheet and not question.no_answer:
             sheet = Sheet(
-                    user_id = user.id,
-                    exercise_id = exercise.id,
-                    question_id = question.id)
+                    user_id=user.id,
+                    exercise_id=exercise.id,
+                    question_id=question.id)
         if not question.no_answer:
             if sheet.point is not None:
                 submitted = True
@@ -195,26 +202,61 @@ def exercise(id=None, seed=None):
                     last_edited = False
             except:
                 pass
-        name = 'form{i}'
+        # Create a formular for a single question
+        name = f'form-{i}'
+        print(f"Form {name}")
         form = QuestionForm(
                 exercise_id = exercise.id,
                 question_id = question.id,
                 user_id = user.id,
                 prefix = name,
-                obj = srheet)
+                obj = sheet)
+        #form = QuestionForm()
         forms.append(form)
         if (now > exercise.open_date and now < exercise.close_date) \
                 or practice and not submitted:
+            print("1st condition")
             if not submitted:
                 kwargs['readonly'] = False
+            print(dir(form))
+            print(f"form.validate_on_submit() == {form.validate_on_submit()}")
+            print(f"question.no_answer == {question.no_answer}")
+            # Howcome the first form gets validated and others do not???
+            # I guess that request thinks, that there is only a single form in
+            # a single request.
+            
+            # I think forms should not be nested like this, we can:
+            # A) Create single varying ExerciseForm
+            # B) Render each QuestionForm separately
             if form.validate_on_submit() and not question.no_answer:
+                # FIXME FIXME FIXME First!
+                # Here is a little misunderstanding
+                # In the template file, all QuestionForms are in a single Form,
+                # so there is only single Form. 
+                # The form is also submitted with the button.
+                # However, it does not mean that all QuestionForms will get 
+                # submitted individually.
+                print("2nd condition")
                 if 'submit' in list(request.form.keys()):
                     submit = True
                     kwargs['readonly'] = True
-                answer = question.evaluate(seed)
-                if type(answer) is float:
+                answer = question.substitute_variables(seed)
+                if type(answer) is float:   # Question with float answer
+                    print("3rd condition")
+                    # FIXME FIXME FIXME
+                    # Error with saving and submitting is here
+                    print("REQUEST")
+                    print(dir(request))
+                    print()
+                    print("REQUEST.FORM")
+                    print(request.form)
+                    print(form)
+                    print(dir(form))
+                    print(form.number)
+                    #print(form.exercise_id)
                     sheet.number = form.number.data
-                elif len(answer) > 1:
+                    print(f"For answer {answer} the float answer is {sheet.number}")
+                elif len(answer) > 1:   # Multiple choice question
                     sheet.option1 = form.option1.data
                     sheet.option2 = form.option2.data
                     sheet.option3 = form.option3.data
@@ -245,7 +287,8 @@ def exercise(id=None, seed=None):
                     question._options[ans] = True
                 edit_time = datetime.now()
                 sheet.edit_date = edit_time
-                if not practice and not submitted:
+                if not practice and not submitted:   # Handle submission of
+                        # a test question
                     try:
                         db.session.add(sheet)
                         db.session.flush()
@@ -257,12 +300,13 @@ def exercise(id=None, seed=None):
                         if not flashed:
                             if not submit:
                                 flash('Answers has been saved on %s' % \
-                                    edit_time.strftime(
+                                        edit_time.strftime(
                                         "%Y/%m/%d, %H:%M"))
                             else: 
                                 flash('Your answer has been submitted')
                             flashed = True
                         if sheet.number is not None:
+                            print(f"Your answer {sheet.number} was saved.")
                             ans_msg = f"Your answer {sheet.number} was saved."
                             status = 'text-info'
                         elif sheet.option1 or sheet.option2 or sheet.option3 \
@@ -287,12 +331,13 @@ def exercise(id=None, seed=None):
                             ans_msg += str(tried)
                             ans_msg += " was saved."
                             status = 'text-info'
-                else:
+                else:   # Handle submission of practice question.
                     if not flashed:
                         flash('Practice result will not be saved')
                         if submit:
                             flash('Results submitted')
                         flashed = True
+            # FIXME: These two saving do not make much sense for now to me
             # necessary to render save check boxes
             elif seed == user.random_seed:
                 try:
@@ -342,6 +387,7 @@ def exercise(id=None, seed=None):
                flashed = True
         status_list.append(status)
         ans_msgs.append(ans_msg)
+    print("End of cycle through questions")
     # End of cycle through questions
     # Prepare the output
     kwargs['status_list'] = status_list
@@ -351,4 +397,6 @@ def exercise(id=None, seed=None):
     kwargs['error'] = error
     kwargs['seed'] = seed
     kwargs['practice'] = practice
+    print("KWARGS")
+    print(kwargs)
     return render_template('exercise/render.html', **kwargs)
