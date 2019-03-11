@@ -221,53 +221,46 @@ def exercise(id=None, seed=None):
             print(dir(form))
             print(f"form.validate_on_submit() == {form.validate_on_submit()}")
             print(f"question.no_answer == {question.no_answer}")
-            # Howcome the first form gets validated and others do not???
-            # I guess that request thinks, that there is only a single form in
-            # a single request.
-            
-            # I think forms should not be nested like this, we can:
-            # A) Create single varying ExerciseForm
-            # B) Render each QuestionForm separately
             if form.validate_on_submit() and not question.no_answer:
-                # FIXME FIXME FIXME First!
-                # Here is a little misunderstanding
-                # In the template file, all QuestionForms are in a single Form,
-                # so there is only single Form. 
-                # The form is also submitted with the button.
-                # However, it does not mean that all QuestionForms will get 
-                # submitted individually.
                 print("2nd condition")
                 if 'submit' in list(request.form.keys()):
                     submit = True
                     kwargs['readonly'] = True
                 answer = question.substitute_variables(seed)
                 if type(answer) is float:   # Question with float answer
-                    print("3rd condition")
-                    # FIXME FIXME FIXME
+                    #print("3rd condition")
                     # Error with saving and submitting is here
-                    print("REQUEST")
-                    print(dir(request))
-                    print()
-                    print("REQUEST.FORM")
-                    print(request.form)
-                    print(form)
-                    print(dir(form))
-                    print(form.number)
+                    #print("REQUEST")
+                    #print(dir(request))
+                    #print()
+                    #print("REQUEST.FORM")
+                    #print(request.form)
+                    #print(form)
+                    #print(dir(form))
+                    #print(form.number)
                     #print(form.exercise_id)
                     sheet.number = form.number.data
-                    print(f"For answer {answer} the float answer is {sheet.number}")
+                    #print(f"For answer {answer} the float answer is {sheet.number}")
                 elif len(answer) > 1:   # Multiple choice question
+                    print("Multiple choice question")
                     sheet.option1 = form.option1.data
                     sheet.option2 = form.option2.data
                     sheet.option3 = form.option3.data
                     sheet.option4 = form.option4.data
                     sheet.option5 = form.option5.data
                 else:
-                    rname = 'radio_{question.id}'
-                    try:
-                        ans = int(request.form[rname].split('_')[-1])
-                    except:
-                        ans = -1
+                    print("Last type of question")
+                    rname = f"radio_{question.id}"
+                    #try:
+                    print("Inside of try")
+                    print(f"rname: {rname}")
+                    print(f"request.form[{rname}]: {request.form[rname]}")
+                    print(f"request.form[{rname}].split('_'): {request.form[rname].split('_')}")
+                    ans = int(request.form[rname].split('_')[-1])
+                    #except:
+                    #print("Inside of expect")
+                    #ans = -1
+                    print(f"Answer is {ans}")
                     question._options = [False for _ in range(5)]
                     sheet.option1 = False 
                     sheet.option2 = False 
@@ -285,6 +278,7 @@ def exercise(id=None, seed=None):
                     elif ans == 4:
                         sheet.option5 = True 
                     question._options[ans] = True
+                # End of handling different types of questions with if blocks
                 edit_time = datetime.now()
                 sheet.edit_date = edit_time
                 if not practice and not submitted:   # Handle submission of

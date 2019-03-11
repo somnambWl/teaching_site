@@ -32,10 +32,10 @@ def index():
     if 'is_admin' in session and session['is_admin']:
         exercises = exercises_all
     else:   # If casual user is logged in show only active exercises
-        for i in range(len(exercises_all)):
-            exercise = exercises_all[i]
+        for i, exercise in enumerate(exercises_all):
+            print(exercise)
             if exercise.open_date < datetime.now() and exercise.active:
-                    exercises.append(exercises_all[i])
+                    exercises.append(exercise)
     eid = [e.id for e in exercises]
     nq = [len(e.questions) for e in exercises]
     enames = [e.name for e in exercises]

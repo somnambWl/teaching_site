@@ -20,7 +20,7 @@ def evaluate(question, sheet, seed, commit=True):
     if type(answer) is float:
         print("Answer type is float")
         print(sheet.number)
-        if sheet.number:
+        if sheet.number is not None:
             print(f"Sheet number is {sheet.number}")
             tried = float(sheet.number)
             if answer == 0 and abs(tried) < 1E-3:
@@ -74,10 +74,10 @@ def evaluate(question, sheet, seed, commit=True):
                     ans_msg = "Your answer is correct!"
                     status = 'text-success'
                 else:
-                    ans_msg = f"The correct answer is options: {(answer[0] + 1)}"
+                    ans_msg = f"The correct answer is options {(answer[0] + 1)}"
                     for j in answer[1:]:
                         ans_msg += f", {(j + 1)}"
-                    ans_msg += f", but you chose options: {(tried[0] + 1)}"
+                    ans_msg += f", but you chose option {(tried[0] + 1)}"
                     for j in tried[1:]:
                         ans_msg += f", {(j + 1)}" 
                     ans_msg += '.'
