@@ -29,9 +29,9 @@ def reevaluate(id=None):
     
 
 @app.route('/render/<int:id>')
-@app.route('/render/<int:id>/<int:seed>')
 @admin_required
 def render(id, seed=None):
+    seed = request.form.get("seed", None)
     render_name = 'Render a single question'
     question = Question.query.filter_by(id=id).first()
     exercise = Exercise.query.filter_by(name=render_name).first()
@@ -58,9 +58,9 @@ def render(id, seed=None):
 
 @app.route('/exercise')
 @app.route('/exercise/<int:id>', methods=['GET', 'POST'])
-@app.route('/exercise/<int:id>/<int:seed>', methods=['GET', 'POST'])
 @login_required
-def exercise(id=None, seed=None):
+def exercise(id=None):
+    seed = request.form.get("seed", None)
     error = None
     flashed = False
     last_edited = True
@@ -83,17 +83,12 @@ def exercise(id=None, seed=None):
     if user.is_admin:
         msg = 'Admin message: '
         if exercise.active:
-            msg +=  'This exercise is visible to user on ' + \
-                    'open_date %s' %\
-                    exercise.open_date.strftime("%Y/%m/%d-%H:%m")
-            flash(msg)
+            msg += 'This exercise is visible to user on ' + \
+                    f'{exercise.open_date.strftime("%Y/%m/%d-%H:%m")}'
         else:
             msg += 'Not visible exercise'
-            flash(msg)
-    kwargs = {
-            'exercise': exercise,
-            'id': id,
-            'readonly': True}
+        flash(msg)
+    kwargs = {'exercise': exercise, 'id': id, 'readonly': True}
     now = datetime.now()
     practice = False
     if seed is None:
@@ -101,7 +96,7 @@ def exercise(id=None, seed=None):
     elif now > exercise.close_date or user.is_admin:
         practice = True
         kwargs['readonly'] = False
-    if seed and seed != user.random_seed or user.is_admin:
+    if seed is not None and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
             practice = True
             kwargs['readonly'] = False
@@ -197,8 +192,7 @@ def exercise(id=None, seed=None):
             try:
                 if last_edited:
                     last_edit = sheet.edit_date
-                    flash('Last edit on %s'\
-                          % last_edit.strftime("%Y/%m/%d, %H:%M"))
+                    flash(f'Last edit on {last_edit.strftime("%Y/%m/%d,%H:%M")}')
                     last_edited = False
             except:
                 pass
@@ -251,15 +245,15 @@ def exercise(id=None, seed=None):
                 else:
                     print("Last type of question")
                     rname = f"radio_{question.id}"
-                    #try:
-                    print("Inside of try")
-                    print(f"rname: {rname}")
-                    print(f"request.form[{rname}]: {request.form[rname]}")
-                    print(f"request.form[{rname}].split('_'): {request.form[rname].split('_')}")
-                    ans = int(request.form[rname].split('_')[-1])
-                    #except:
-                    #print("Inside of expect")
-                    #ans = -1
+                    try:
+                        print("Inside of try")
+                        print(f"rname: {rname}")
+                        print(f"request.form[{rname}]: {request.form[rname]}")
+                        print(f"request.form[{rname}].split('_'): {request.form[rname].split('_')}")
+                        ans = int(request.form[rname].split('_')[-1])
+                    except:
+                        print("Inside of expect")
+                        ans = -1
                     print(f"Answer is {ans}")
                     question._options = [False for _ in range(5)]
                     sheet.option1 = False 

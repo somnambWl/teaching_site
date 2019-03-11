@@ -37,9 +37,11 @@ class Sheet(db.Model):
     edit_date = db.Column(db.DateTime)
     point = db.Column(db.Float)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer,
+            db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', 
-            backref=db.backref('sheets',lazy='dynamic'))
+            backref=db.backref('sheets',lazy='dynamic',
+            cascade="all, delete-orphan"))
     exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'),
             nullable=False)
     exercise = db.relationship('Exercise',

@@ -45,6 +45,8 @@ A Question has these parameters:
 - Answer - A text or a command. If you need to use mathematical functions here, do not put them between double dollar signs as the text here is not rendered with MathJax but with Sympy. Variables used still need to be surrounded by \_.
 - Text Variables - Here, state all Variables used in this question.
 
+Variables used in the question with multiple choices can not be of type range, they have to be a list.
+
 ## How to create a QuestionCategory
 
 The only purpose of QuestionCategories is to sort questions. 

@@ -10,11 +10,13 @@
 {% include '_flashmessages.html'%}
 
 {% from "_formhelper.html" import render_field %}
-
+{% if seed %}
+	<p>{{ seed }}</p>
+{% endif %}
 <!-- Exercise formular -->
 <!-- ----------------- -->
-<form method="POST" action="{{ url_for('exercise', id=exercise.id, seed=seed) 
-		}}" role="form" id="ExerciseFormular">
+<form method="POST" action="{{ url_for('exercise', id=exercise.id) }}"
+		role="form" id="ExerciseFormular">
 	<!-- Go through question list-->
 	{% for question in question_list %}
 		{% set itr = loop.index %}  <!-- Set the iterator value -->
@@ -63,11 +65,11 @@
 				<label>Answer:</label>
 				<div class="form-group">
 				<div class="checkbox">
-				{{ render_checkbox(form.option1,options,0,disabled=readonly) }}
-				{{ render_checkbox(form.option2,options,1,disabled=readonly) }}
-				{{ render_checkbox(form.option3,options,2,disabled=readonly) }}
-				{{ render_checkbox(form.option4,options,3,disabled=readonly) }}
-				{{ render_checkbox(form.option5,options,4,disabled=readonly) }}
+				{{ render_checkbox(formular.option1, options, 0, disabled=readonly) }}
+				{{ render_checkbox(formular.option2, options, 1, disabled=readonly) }}
+				{{ render_checkbox(formular.option3, options, 2, disabled=readonly) }}
+				{{ render_checkbox(formular.option4, options, 3, disabled=readonly) }}
+				{{ render_checkbox(formular.option5, options, 4, disabled=readonly) }}
 				</div>
 				</div>
 			{% elif question.substitute_variables(seed)|length == 1 %} <!-- Question with at least
@@ -79,13 +81,13 @@
 				<div class="form-group">
 				<div class="radio">
 				{% for o in range(5) %}
-					{{ render_radio(question._options[o], options,o, readonly, qid) }}
+					{{ render_radio(question._options[o], options, o, readonly, qid) }}
 				{% endfor %}
 				</div>
 				</div>
 			{% endif %}
 		{% else %} <!-- Question with numerical answer -->
-			{{ render_field(formular.number, class='form-control',disabled=readonly) }}
+			{{ render_field(formular.number, class='form-control', disabled=readonly) }}
 		{% endif%}
 		{% if ans_msgs %} <!-- Question with plaintext answer -->
 			<p class={{status}}>{{ ans_msg }}</p>

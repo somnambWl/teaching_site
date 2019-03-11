@@ -368,6 +368,7 @@ class Variable(db.Model):
     def get_list(self):
         assert hasattr(self, 'constraint')
         c = ast.literal_eval(self.constraint)
+        #print(f"c: {c}")
         assert type(c) is list
         return c
 
@@ -445,7 +446,7 @@ class Question(db.Model):
         text = self.body
         for i in range(len(self.text_variables.all())):
             var = self.text_variables[i]
-            pattern = '_' + var.name + '_'
+            pattern = f"_{var.name}_"
             text = text.replace(pattern, 
                 str(var.render(seed+i)))
 
@@ -459,10 +460,10 @@ class Question(db.Model):
         option_list = []
         if self.correct_variable and self.wrong_variable:
             option_list = []
-            correct_list = rs.permutation(self.correct_variable.get_list()
-                    ).tolist()
-            wrong_list = rs.permutation(self.wrong_variable.get_list()
-                    ).tolist()
+            correct_list = rs.permutation(
+                    self.correct_variable.get_list()).tolist()
+            wrong_list = rs.permutation(
+                    self.wrong_variable.get_list()).tolist()
             ind = rs.randint(0, len(correct_list))
             option_list.append(correct_list.pop(ind))
             correct_list.extend(wrong_list)
