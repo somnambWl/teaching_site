@@ -1,3 +1,4 @@
+import random
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -93,9 +94,10 @@ def exercise(id=None):
     practice = False
     if seed is None:
         seed = user.random_seed
-    elif now > exercise.close_date or user.is_admin:
+    if now > exercise.close_date or user.is_admin:
         practice = True
         kwargs['readonly'] = False
+        seed = random.randint(1,10000)
     if seed is not None and seed != user.random_seed or user.is_admin:
         if now > exercise.close_date or user.is_admin:
             practice = True
@@ -150,13 +152,13 @@ def exercise(id=None):
     # questions with single answer and three with numerical answer
     flash_date = False
     # Now cycle through questions
-    print("Questions info")
+#    print("Questions info")
+#    for i, question in enumerate(question_list):
+#        print(i, question)
     for i, question in enumerate(question_list):
-        print(i, question)
-    for i, question in enumerate(question_list):
-        print()
-        print(f"{i}-th question {question}")
-        print()
+#        print()
+#        print(f"{i}-th question {question}")
+#        print()
         ans_msg = ''
         status= ''
         if not practice:   # If the exercise is not for practise
@@ -198,7 +200,7 @@ def exercise(id=None):
                 pass
         # Create a formular for a single question
         name = f'form-{i}'
-        print(f"Form {name}")
+#        print(f"Form {name}")
         form = QuestionForm(
                 exercise_id = exercise.id,
                 question_id = question.id,
@@ -209,14 +211,14 @@ def exercise(id=None):
         forms.append(form)
         if (now > exercise.open_date and now < exercise.close_date) \
                 or practice and not submitted:
-            print("1st condition")
+#            print("1st condition")
             if not submitted:
                 kwargs['readonly'] = False
-            print(dir(form))
-            print(f"form.validate_on_submit() == {form.validate_on_submit()}")
-            print(f"question.no_answer == {question.no_answer}")
+#            print(dir(form))
+#            print(f"form.validate_on_submit() == {form.validate_on_submit()}")
+#            print(f"question.no_answer == {question.no_answer}")
             if form.validate_on_submit() and not question.no_answer:
-                print("2nd condition")
+#                print("2nd condition")
                 if 'submit' in list(request.form.keys()):
                     submit = True
                     kwargs['readonly'] = True
@@ -236,25 +238,25 @@ def exercise(id=None):
                     sheet.number = form.number.data
                     #print(f"For answer {answer} the float answer is {sheet.number}")
                 elif len(answer) > 1:   # Multiple choice question
-                    print("Multiple choice question")
+#                    print("Multiple choice question")
                     sheet.option1 = form.option1.data
                     sheet.option2 = form.option2.data
                     sheet.option3 = form.option3.data
                     sheet.option4 = form.option4.data
                     sheet.option5 = form.option5.data
                 else:
-                    print("Last type of question")
+#                    print("Last type of question")
                     rname = f"radio_{question.id}"
                     try:
-                        print("Inside of try")
-                        print(f"rname: {rname}")
-                        print(f"request.form[{rname}]: {request.form[rname]}")
-                        print(f"request.form[{rname}].split('_'): {request.form[rname].split('_')}")
+#                        print("Inside of try")
+#                        print(f"rname: {rname}")
+#                        print(f"request.form[{rname}]: {request.form[rname]}")
+#                        print(f"request.form[{rname}].split('_'): {request.form[rname].split('_')}")
                         ans = int(request.form[rname].split('_')[-1])
                     except:
-                        print("Inside of expect")
+#                        print("Inside of expect")
                         ans = -1
-                    print(f"Answer is {ans}")
+#                    print(f"Answer is {ans}")
                     question._options = [False for _ in range(5)]
                     sheet.option1 = False 
                     sheet.option2 = False 
@@ -375,7 +377,7 @@ def exercise(id=None):
                flashed = True
         status_list.append(status)
         ans_msgs.append(ans_msg)
-    print("End of cycle through questions")
+#    print("End of cycle through questions")
     # End of cycle through questions
     # Prepare the output
     kwargs['status_list'] = status_list
@@ -385,6 +387,6 @@ def exercise(id=None):
     kwargs['error'] = error
     kwargs['seed'] = seed
     kwargs['practice'] = practice
-    print("KWARGS")
-    print(kwargs)
+#    print("KWARGS")
+#    print(kwargs)
     return render_template('exercise/render.html', **kwargs)

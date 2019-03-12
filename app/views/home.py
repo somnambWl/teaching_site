@@ -33,7 +33,8 @@ def index():
         exercises = exercises_all
     else:   # If casual user is logged in show only active exercises
         for i, exercise in enumerate(exercises_all):
-            print(exercise)
+            print(f"Exercise: {exercise}")
+            print(f"{exercise.open_date < datetime.now()} and {exercise.active}")
             if exercise.open_date < datetime.now() and exercise.active:
                     exercises.append(exercise)
     eid = [e.id for e in exercises]
