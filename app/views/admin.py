@@ -50,8 +50,6 @@ def get_user():
         user = User.query.filter_by(username = session['username']).first()
         return user
 
-
-
 class BaseView(ModelView):
     """
     Definition of basic view from which all others admin views will inherit. 
@@ -62,8 +60,6 @@ class BaseView(ModelView):
         return is_admin()
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('index'))
-
-
 
 class UserView(BaseView):
     """
@@ -117,8 +113,6 @@ class UserView(BaseView):
     #            User.password = form.password.data
     #        else:
     #            del form.password.data
-
-
 
 class QuestionView(BaseView):
     """
@@ -304,7 +298,7 @@ class UnitView(BaseView):
     form_rules = ('name', 'fullname', 'face', 'SI_value', 'category')
 
 class UnitCategoryView(BaseView):
-    column_list = ('name')
+    column_list = ('name', 'm', 'kg', 's', 'A', 'K', 'mol', 'cd')
     column_labels = {
             'm': 'meter (m)',
             'kg': 'kilogram (kg)',

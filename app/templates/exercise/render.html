@@ -10,9 +10,6 @@
 {% include '_flashmessages.html'%}
 
 {% from "_formhelper.html" import render_field %}
-{% if seed %}
-	<p>{{ seed }}</p>
-{% endif %}
 <!-- Exercise formular -->
 <!-- ----------------- -->
 <form method="POST" action="{{ url_for('exercise', id=exercise.id) }}"
@@ -23,19 +20,17 @@
 		<!-- Render a header and a description for each question in the list -->
 		{% if itr-1 in type_dict %}
 			{% if type_dict[itr-1] == 'single' %}
-				<h3>Multiple choice</h3>
+				<h3>Single choice</h3>
 				<p>
-				Jede der folgenden Fragen hat nur eine korrekte Antwort. 
-				Falsche Antworten resultieren in 
-				<ins class='text-danger'>Punktabzug</ins>.
+				Following questions have only a single correct answer. 
+				<!-- <ins class='text-danger'>Punktabzug</ins>. -->
 				</p>
 			{% elif type_dict[itr-1] == 'optional' %}
 				<h3>Multiple choice</h3>
 				<p>
-				Jede der folgenden Fragen hat mindestens eine korrekte Antwort.
-				at least one correct answer. 
-				Falsche Antworten resultieren in 
-				<ins class='text-danger'>Punktabzug</ins>.
+				Following questions can have multiple correct answer.
+				At least one is correct always.
+				<!-- <ins class='text-danger'>Punktabzug</ins>. -->
 				</p>
 			{% elif type_dict[itr-1] == 'numerical' %}
 				<h3>Numerical</h3>

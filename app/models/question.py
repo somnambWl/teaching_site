@@ -346,7 +346,7 @@ class Variable(db.Model):
             value = value * unit.SI_value
         return value
 
-    def render(self, seed = None):
+    def render(self, seed=None):
         rs = np.random.RandomState(seed)
         if self.category != 'unit':
             value = self.draw(seed)
@@ -358,7 +358,7 @@ class Variable(db.Model):
                 value = f"{value:9.3E}"
             if hasattr(self, 'units') and len(self.units.all()) > 0:
                 unit = rs.choice(self.units.all())
-                value = f"{value} {unit.name}"
+                value = fr"{value} {unit.face}"
             return value
         else:
             unit = rs.choice(self.units.all())
@@ -441,22 +441,26 @@ class Question(db.Model):
             return self.name
 
     def render(self, seed, options=5):
+        print("RENDERING")
         seed = seed + self.id
         rs = np.random.RandomState(seed)
+        print(self.text_variables.all())
         text = self.body
+        print(text)
         for i in range(len(self.text_variables.all())):
             var = self.text_variables[i]
-            pattern = f"_{var.name}_"
-            text = text.replace(pattern, 
-                str(var.render(seed+i)))
-
+            #print(type(var))
+            #print(dir(var))
+            print(f"Replacing _{var.name}_ with {var.render(seed+i)}")
+            text = text.replace(f"_{var.name}_", f"{var.render(seed+i)}") 
+        print(text)
         if self.answer_units:
             unit_rs = np.random.RandomState(seed+1)
             unit = unit_rs.choice(self.answer_units)
             pattern = '_unit_'
             face = unit.get_face()
             text = text.replace(pattern, face)
-        
+        print(text)
         option_list = []
         if self.correct_variable and self.wrong_variable:
             option_list = []
@@ -470,9 +474,6 @@ class Question(db.Model):
             option_list.extend(rs.permutation(correct_list)[:options - 1])
         return text, rs.permutation(option_list)
             
-    #TODO: Change the name to substitute_variables
-    # This is really confusing, as evaluate is also used for evaluating the
-    # answer
     def substitute_variables(self, seed):
         """
         Go through the question and using unique random seeds replace all
@@ -515,10 +516,16 @@ class Question(db.Model):
                         " saved, please report to system administrator.")
                 SI_answer = "ERROR!"
             # If the answer require units, add units to the answer.
+            print(f"self.answer_units: {self.answer_units}")
             if self.answer_units:
+                print("Answer has units")
                 unit_rs = np.random.RandomState(qseed+1)
+                print(f"unit_rs: {unit_rs}")
                 unit = unit_rs.choice(self.answer_units)
+                print(f"unit: {unit}")
+                print(f"SI_answer before: {SI_answer}")
                 SI_answer = unit.from_SI(SI_answer)
+                print(f"SI_answer after: {SI_answer}")
             return SI_answer
         else:
             answer_list = []

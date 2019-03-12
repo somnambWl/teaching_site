@@ -37,5 +37,3 @@ admin = Admin(app, name='Teaching Site', template_mode='bootstrap3')
 
 # import views from each module
 from app.views import home, user, question, exercise, admin
-#from app.views import home
-#from app.views import admin
