@@ -29,11 +29,13 @@ migrate = Migrate(app, db)
 # Import modules (i.e. tables in db)
 from app.models import user, question, exercise
 
-
 mail = Mail(app)
 
+from app.views.admin_home import HomeView
+
 # Framework for admins
-admin = Admin(app, name='Teaching Site', template_mode='bootstrap3')
+admin = Admin(app, name='Teaching Site', template_mode='bootstrap3',
+                index_view=HomeView())
 
 # import views from each module
 from app.views import home, user, question, exercise, admin

@@ -35,17 +35,19 @@ class User(db.Model):
     validation_code = db.Column(db.String(10))
     validated = db.Column(db.Boolean)
     is_admin = db.Column(db.Boolean)
+    enrolled = db.Column(db.Boolean, default=False)
     random_seed = db.Column(db.Integer)
 
     def __init__(self, fullname='', email='', username='', password='', 
-            is_admin='', validated='', validation_code = None, 
-            password_tmp = ''):
+            is_admin='', validated='', validation_code=None, 
+            password_tmp='', enrolled=False):
         self.fullname = fullname
         self.email = email
         self.username = username
         self.password = password
         self.password_tmp = password_tmp
         self.is_admin = is_admin
+        self.enrolled = enrolled
         self.random_seed = randint(1, 10000)
         if validation_code is None:
             alphanum = string.ascii_letters + string.digits

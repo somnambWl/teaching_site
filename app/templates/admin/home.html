@@ -1,0 +1,15 @@
+{% extends "admin/master.html" %}
+
+{% block head_css %}
+  {{ super() }}
+{% endblock head_css %}
+
+{% block body %}
+
+{% if table is defined %}
+	<div class="table-responsive">
+		{{ table| safe }}
+	</div>
+{% endif %}
+{% endblock body %}
+

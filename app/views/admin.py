@@ -65,7 +65,8 @@ class UserView(BaseView):
     """
     An admin view for User table.
     """
-    column_list = ('fullname', 'email', 'username', 'validated', 'is_admin')
+    column_list = ('fullname', 'email', 'username', 'enrolled', 'validated',
+            'is_admin')
     column_searchable_list = ('username', 'email', 'fullname')
     column_labels = {
             'fullname': 'Full name',
@@ -74,11 +75,12 @@ class UserView(BaseView):
             'password_tmp': '1-time Password',
             'random_seed': 'Random seed',
             'validation_code': 'Validation code',
+            'enrolled': 'Enrolled',
             'validated': 'Validated',
             'is_admin': 'Admin'}
     form_rules = ('fullname', 'email', 'username', 
             'password_tmp', 'random_seed', 'validation_code', 
-            'validated', 'is_admin')
+            'enrolled', 'validated', 'is_admin')
 
     @action("ban_user", "Ban user", "Ban selected users?")
     def ban_user(self, ids):
@@ -308,6 +310,11 @@ class UnitCategoryView(BaseView):
             'mol': 'mole (mol)',
             'cd': 'candela (cd)',}
     form_rules = ('name', 'm', 'kg', 's', 'A', 'K', 'mol', 'cd')
+
+class HomeView(BaseView):
+    """
+
+    """
 
 with warnings.catch_warnings():
     warnings.filterwarnings(
