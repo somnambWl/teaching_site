@@ -55,7 +55,6 @@ def render(id, seed=None):
         seed = user.random_seed
     return redirect(url_for('exercise', id=exercise.id, seed=seed))
 
-
 @app.route('/exercise')
 @app.route('/exercise/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -86,6 +85,8 @@ def exercise(id=None):
     exercise = Exercise.query.filter_by(id=id).first_or_404()
     # Get user by their username
     user = User.query.filter_by(username=session['username']).first()
+    if user.is_admin:
+        practice = True
     # User has to be validated to do exercises
     if not user.validated:
         return redirect(url_for('validate'))
@@ -109,7 +110,6 @@ def exercise(id=None):
         seed = user.random_seed
     if datetime.now() > exercise.close_date or user.is_admin:
         kwargs['readonly'] = False
-        seed = random.randint(1,10000)
     if seed is not None and seed != user.random_seed or user.is_admin:
         if datetime.now() > exercise.close_date or user.is_admin:
             kwargs['readonly'] = False

@@ -1,0 +1,20 @@
+name	fullname	face	SI_value	category_name
+eV	electron volt	eV	1.602e-19	energy
+kcal/mol	kilocalories per mol	\(\frac{\rm kcal}{\rm mol}\)	6.948e-21	energy
+kJ/mol	kilojoule per mol	\(\frac{\rm kJ}{\rm mol}\)	1.660e-21	energy
+Ha	Hartree	\(Ha\)	4.340e-18	energy
+Ry	Rydberg	\(Ry\)	2.180e-18	energy
+J	Joule	J	1.0	energy
+m	meter	m	1.0	length
+nm	nanometer	\(nm\)	1e-9	length
+pm	picometer	\(pm\)	1e-12	length
+ang	Angstrom	\(\overset{\lower.5em\circ}{\mathrm{A}}\)	1e-10	length
+a0	Bohr	\(a_0\)	5.292e-11	length
+kg	kilogram	\(kg\)	1.0	mass
+g	gram	\(g\)	1e-3	mass
+Da	Dalton	Da	1.660e-27	mass
+s	second	\(s\)	1.0	time
+ms	milisecond	\(ms\)	0.001	time
+ns	nanosecond	\(ns\)	1e-6	time
+Hz	Hertz	Hz	1.0	frequency
+T	period	T	1.0	period
