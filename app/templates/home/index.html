@@ -1,27 +1,44 @@
 {% extends "base.html" %}
 
-{% block title%} - Home{% endblock %}
+{% block title%} - Home {% endblock %}
 
 {% block content %}
 	<h3> Welcome to exercises PCIV </h3>
 	<hr>
 	{% include '_errormessages.html'%}
 	{% include '_flashmessages.html'%}
+	<h4> Scored exercices </h4>
+	<hr>
 	{% for id in eid %}
 		{% set itr = loop.index0 %}
 		{% set name = enames[itr] %}
 		{% set N = nq[itr] %}
 		{% set date = dates[itr] %}
-		<h4><a href="{{ url_for('exercise', id=id) }}">{{name}}</a></h4>
-		<p>{{N}} questions with deadline on {{ date.strftime("%Y/%m/%d, %H:%M") }}</p>
-		<hr>
+		{% if scored[itr] %}
+			<h4><a href="{{ url_for('exercise', id=id, practice=False) }}">{{name}}</a></h4>
+			<p>{{N}} questions with deadline on {{ date.strftime("%Y/%m/%d, %H:%M") }}</p>
+			<hr>
+		{% endif %}
+	{% endfor %}
+	<h4> Training exercises </hr>
+	<hr>
+	{% for id in eid %}
+		{% set itr = loop.index0 %}
+		{% set name = enames[itr] %}
+		{% set N = nq[itr] %}
+		{% set date = dates[itr] %}
+		{% if practice[itr] %}
+			<h4><a href="{{ url_for('exercise', id=id, practice=True) }}">{{name}}</a></h4>
+			<p>{{N}} questions </p>
+			<hr>
+		{% endif %}
 	{% endfor %}
 	<h4>
-	<a href="{{ url_for('profile')}}">User Profile</a>
+		<a href="{{ url_for('profile')}}">User Profile</a>
 	</h4>
 {% endblock %}
 
 {% block footer %}
-{% include "footer/footer_home.html" %}
+	{% include "footer/footer_home.html" %}
 {% endblock %}
 

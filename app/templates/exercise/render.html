@@ -12,7 +12,13 @@
 {% from "_formhelper.html" import render_field %}
 <!-- Exercise formular -->
 <!-- ----------------- -->
-<form method="POST" action="{{ url_for('exercise', id=exercise.id) }}"
+<form method="POST"
+	action=
+		{% if practice is sameas true %}
+			"{{ url_for('exercise', id=exercise.id, practice=practice, seed=seed) }}"
+		{% elif practice is sameas false %}
+			"{{ url_for('exercise', id=exercise.id, practice=practice) }}"
+		{% endif %}
 		role="form" id="ExerciseFormular">
 	<!-- Go through question list-->
 	{% for question in question_list %}
@@ -90,35 +96,32 @@
 	{% endfor %} <!-- End of FOR cycle through question list -->
 	<hr>
 	<div class="row">
-	{% if practice %} <!-- Only exercise sheet -->
-		<div class='col-md-6'>
-		<button type="submit" class="btn btn-default" name='save'>Evaluate</button>
-		</div>
-		<div class='col-md-6'>
-		<p class="text-center">
-		<label>Practice page</label>
-		</p>
-		</div>
-	{% else %} <!-- Test sheet -->
-		<div class='col-md-6'>
-		<p>
-		<button type="submit" class="btn btn-default" name='save'>Save</button>
-		For future edition
-		</p>
-		<p>
-		<input type="submit" name="btn" value="Save">
-		</p>
-		<p class=text-danger>
-		<button type="submit" class="btn btn-danger" name='submit'>Submit</button>
-		No going back
-		</p>
-		</div>
-		<div class='col-md-6'>
-		<p class="text-center">
-		<label>Deadline</label>: {{ exercise.close_date.strftime("%Y/%m/%d, %H:%M") }}
-		</p>
-		</div>
-	{% endif %}
+		{% if practice is sameas true %} <!-- Only exercise sheet -->
+			<div class='col-md-6'>
+				<button type="submit" class="btn btn-default" name='save'>Evaluate</button>
+			</div>
+			<div class='col-md-6'>
+				<p class="text-center">
+					<label>Practice page</label>
+				</p>
+			</div>
+		{% elif practice is sameas false %} <!-- Test sheet -->
+			<div class='col-md-6'>
+				<p>
+					<button type="submit" class="btn btn-default" name='save'>Save</button>
+					For future edition
+				</p>
+				<p class=text-danger>
+					<button type="submit" class="btn btn-danger" name='submit'>Submit</button>
+					No going back
+				</p>
+			</div>
+			<div class='col-md-6'>
+				<p class="text-center">
+					<label>Deadline</label>: {{ exercise.close_date.strftime("%Y/%m/%d, %H:%M") }}
+				</p>
+			</div>
+		{% endif %}
 	</div>
 </form>
 {% endblock %}

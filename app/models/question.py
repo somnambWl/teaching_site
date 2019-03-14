@@ -442,7 +442,7 @@ class Question(db.Model):
 
     def render(self, seed, options=5):
 #        print("RENDERING")
-        seed = seed + self.id
+        seed = int(seed) + int(self.id)
         rs = np.random.RandomState(seed)
 #        print(self.text_variables.all())
         text = self.body
@@ -484,7 +484,7 @@ class Question(db.Model):
         seed : int
             Unique user's seed
         """
-        qseed = seed + self.id   # Form a random seed  
+        qseed = int(seed) + int(self.id)   # Form a random seed  
         rs = np.random.RandomState(qseed)   # Initialize random state
         if self.answer_command:
             answer = self.answer_command

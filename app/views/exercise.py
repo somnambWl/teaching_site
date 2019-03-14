@@ -27,7 +27,6 @@ def reevaluate(id=None):
         flash(f"Reevaluate sheet for user {sheet.user}")
         evaluate(sheet.question, sheet, sheet.user.random_seed)
     return redirect('admin/sheet')
-    
 
 @app.route('/render/<int:id>')
 @admin_required
@@ -52,7 +51,7 @@ def render(id, seed=None):
         db.session.add(exercise)
     db.session.commit()
     if seed is None:
-        user = User.query.filter_by(username = session['username']).first()
+        user = User.query.filter_by(username=session['username']).first()
         seed = user.random_seed
     return redirect(url_for('exercise', id=exercise.id, seed=seed))
 
@@ -61,12 +60,26 @@ def render(id, seed=None):
 @app.route('/exercise/<int:id>', methods=['GET', 'POST'])
 @login_required
 def exercise(id=None):
-    seed = request.form.get("seed", None)
+    seed = request.args.get("seed", None)
+    print(f"Initial seed: {seed}")
+    practice = request.args.get("practice", False)
+#    practice2 = request.form.get("practice", False)
+#    print(f"Args practice: {practice}")
+#    print(f"Form practice: {practice2}")
+    if practice == "True":
+        practice = True
+    elif practice == "False":
+        practice = False
     error = None
     flashed = False
     last_edited = True
     submit = False
     submitted = False
+    now = datetime.now()
+    forms = list()
+    status_list = list()
+    points = list()
+    ans_msgs = list()
     if id is None:   # If there is no exercise with such an ID 
         return redirect(url_for('index'))   # Go back to the main page
     # Get the exercise by the ID
@@ -90,66 +103,20 @@ def exercise(id=None):
             msg += 'Not visible exercise'
         flash(msg)
     kwargs = {'exercise': exercise, 'id': id, 'readonly': True}
-    now = datetime.now()
-    practice = False
+    if seed is None and practice is True:
+        seed = random.randint(1,10000)
     if seed is None:
         seed = user.random_seed
-    if now > exercise.close_date or user.is_admin:
-        practice = True
+    if datetime.now() > exercise.close_date or user.is_admin:
         kwargs['readonly'] = False
         seed = random.randint(1,10000)
     if seed is not None and seed != user.random_seed or user.is_admin:
-        if now > exercise.close_date or user.is_admin:
-            practice = True
+        if datetime.now() > exercise.close_date or user.is_admin:
             kwargs['readonly'] = False
-    forms = list()
-    status_list = list()
-    points = list()
-    ans_msgs = list()
-    # Prepare lists for sorting questions by type
-    optional_list = list()
-    numerical_list = list()
-    single_choice_list = list()
-    no_answer_list = list()
-    # Go through questions in an exercise and sort them by type
-    for q in exercise.questions:
-        answer = q.substitute_variables(seed)
-        if q.no_answer:
-            no_answer_list.append(q)
-        elif type(answer) is float:
-            numerical_list.append(q)
-        elif len(answer) == 1:
-            single_choice_list.append(q)
-            #TODO: Following line unnecessary?
-            q._options = [False for _ in range(5)]
-        else:
-            optional_list.append(q)
-    # Now, when questions are sorted by type, create a dict
-    # in which for every key is number of questions of the given type
-    qlists = [single_choice_list, optional_list, numerical_list, 
-            no_answer_list]
-    qkeys = ['single', 'optional', 'numerical', 'no_answer']
-    type_dict = dict()
-    type_length = 0
-    for i, qlist in enumerate(qlists):
-        qlist.sort(key=lambda q: q.id)
-        key = qkeys[i]
-        if len(qlist) > 0:   # If there is at least one question of given type
-            type_dict[type_length] = key
-            type_length = type_length + len(qlist)
-    # Merge lists of questions
-    question_list = single_choice_list
-    question_list.extend(optional_list)
-    question_list.extend(numerical_list)
-    question_list.extend(no_answer_list)
+    type_dict, question_list = get_questions(exercise, seed)
     # Prepare dictionary for output
     kwargs['type_dict'] = type_dict
     kwargs['question_list'] = question_list
-    # Now we should have a dictionary of indices of first questions of a given
-    # type. So for example if there is five questions with single answer and
-    # then three answers with a numerical answer, the dict will look like
-    # {'single':0, 'numerical':5} and in the question list, there will be five
-    # questions with single answer and three with numerical answer
     flash_date = False
     # Now cycle through questions
 #    print("Questions info")
@@ -159,8 +126,8 @@ def exercise(id=None):
 #        print()
 #        print(f"{i}-th question {question}")
 #        print()
-        ans_msg = ''
-        status= ''
+        ans_msg = ""
+        status = ""
         if not practice:   # If the exercise is not for practise
             # Search if user already filled it
             sheet = Sheet.query.filter_by(
@@ -185,7 +152,7 @@ def exercise(id=None):
         if not question.no_answer:
             if sheet.point is not None:
                 submitted = True
-                if now < exercise.close_date:
+                if datetime.now() < exercise.close_date:
                     kwargs['readonly'] = True
                 if seed != user.random_seed:
                     practice = True
@@ -387,6 +354,51 @@ def exercise(id=None):
     kwargs['error'] = error
     kwargs['seed'] = seed
     kwargs['practice'] = practice
+    print(f"Final seed: {seed}")
 #    print("KWARGS")
 #    print(kwargs)
     return render_template('exercise/render.html', **kwargs)
+
+def get_questions(exercise, seed):
+    # Prepare lists for sorting questions by type
+    optional_list = list()
+    numerical_list = list()
+    single_choice_list = list()
+    no_answer_list = list()
+    # Go through questions in an exercise and sort them by type
+    for q in exercise.questions:
+        answer = q.substitute_variables(seed)
+        if q.no_answer:
+            no_answer_list.append(q)
+        elif type(answer) is float:
+            numerical_list.append(q)
+        elif len(answer) == 1:
+            single_choice_list.append(q)
+            #TODO: Following line unnecessary?
+            q._options = [False for _ in range(5)]
+        else:
+            optional_list.append(q)
+    # Now, when questions are sorted by type, create a dict
+    # in which for every key is number of questions of the given type
+    qlists = [single_choice_list, optional_list, numerical_list, 
+            no_answer_list]
+    qkeys = ['single', 'optional', 'numerical', 'no_answer']
+    type_dict = dict()
+    type_length = 0
+    for i, qlist in enumerate(qlists):
+        qlist.sort(key=lambda q: q.id)
+        key = qkeys[i]
+        if len(qlist) > 0:   # If there is at least one question of given type
+            type_dict[type_length] = key
+            type_length = type_length + len(qlist)
+    # Merge lists of questions
+    question_list = single_choice_list
+    question_list.extend(optional_list)
+    question_list.extend(numerical_list)
+    question_list.extend(no_answer_list)
+    # Now we should have a dictionary of indices of first questions of a given
+    # type. So for example if there is five questions with single answer and
+    # then three answers with a numerical answer, the dict will look like
+    # {'single':0, 'numerical':5} and in the question list, there will be five
+    # questions with single answer and three with numerical answer
+    return type_dict, question_list

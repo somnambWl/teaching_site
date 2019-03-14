@@ -103,18 +103,35 @@ class UserView(BaseView):
                 error = "Ban user can not be saved."
         flash(f"{len(ids)} users banned.")
 
-    #def on_model_change(self, form, User):
-    #    """
-    #    ???
-    #    """
-    #    if not form.random_seed.data:
-    #        User.random_seed = 42
-    #        flash('set random seed to 42')
-    #    if hasattr(form, 'password'):
-    #        if form.password.data:
-    #            User.password = form.password.data
-    #        else:
-    #            del form.password.data
+    @action("enroll", "Enroll", "Enroll selected users?")
+    def enroll(self, ids):
+        """
+        Enroll new students.
+
+        Enrolling is necessary for showing students in the summary table.
+        """
+        for id in ids:
+            user = User.query.filter_by(id=id).first()
+            user.enrolled = True
+            try:
+                db.session.commit()
+            except:
+                error = "Enrolled user can not be saved."
+        flash(f"{len(ids)} users enrolled.")
+
+    @action("disenroll", "Disenroll", "Disenroll selected users?")
+    def disenroll(self, ids):
+        """
+        Disenroll students.
+        """
+        for id in ids:
+            user = User.query.filter_by(id=id).first()
+            user.enrolled = False
+            try:
+                db.session.commit()
+            except:
+                error = "Disenrolled user can not be saved."
+        flash(f"{len(ids)} users disenrolled.")
 
 class QuestionView(BaseView):
     """
@@ -211,7 +228,95 @@ class ExerciseView(BaseView):
         return Markup(string)
 
     column_formatters = {'name': _exercise_formatter}
-    form_rules = ('questions', 'name', 'open_date', 'close_date', 'active')
+    form_rules = ('questions', 'name', 'open_date', 'close_date', 'active',
+            'scored', 'practice')
+
+    @action("activate", "Activate", "Activate selected exercises?")
+    def activate(self, ids):
+        """
+        Activate exercises.
+        """
+        for id in ids:
+            exercise = Exercise.query.filter_by(id=id).first()
+            exercise.active = True
+            try:
+                db.session.commit()
+            except:
+                error = "Activated exercises can not be saved."
+        flash(f"{len(ids)} exercises activated.")
+
+    @action("deactivate", "Deactivate", "Deactivate selected exercises?")
+    def deactivate(self, ids):
+        """
+        Deactivate exercises.
+        """
+        for id in ids:
+            exercise = Exercise.query.filter_by(id=id).first()
+            exercise.active = False
+            try:
+                db.session.commit()
+            except:
+                error = "Deactivated exercises can not be saved."
+        flash(f"{len(ids)} exercises deactivated.")
+
+    @action("make_scored", "Make scored", "Make selected exercises scored?")
+    def make_scored(self, ids):
+        """
+        Make selected exercises scored.
+        """
+        for id in ids:
+            exercise = Exercise.query.filter_by(id=id).first()
+            exercise.scored = True
+            try:
+                db.session.commit()
+            except:
+                error = "Scored exercises can not be saved."
+        flash(f"{len(ids)} exercises are now scored.")
+
+    @action("make_unscored", "Make unscored",
+            "Make selected exercises unscored?")
+    def make_unscored(self, ids):
+        """
+        Make selected exercises unscored.
+        """
+        for id in ids:
+            exercise = Exercise.query.filter_by(id=id).first()
+            exercise.scored = False
+            try:
+                db.session.commit()
+            except:
+                error = "Unscored exercises can not be saved."
+        flash(f"{len(ids)} exercises are now unscored.")
+
+    @action("make_practice", "Make practice",
+            "Make selected exercises practice?")
+    def make_practice(self, ids):
+        """
+        Make selected exercises practice.
+        """
+        for id in ids:
+            exercise = Exercise.query.filter_by(id=id).first()
+            exercise.practice = True
+            try:
+                db.session.commit()
+            except:
+                error = "Practice exercises can not be saved."
+        flash(f"{len(ids)} exercises are now available for practice.")
+
+    @action("disable_practice", "Disable practice",
+            "Disable practice for selected exercises?")
+    def disable_practice(self, ids):
+        """
+        Disable practice for selected exercises.
+        """
+        for id in ids:
+            exercise = Exercise.query.filter_by(id=id).first()
+            exercise.practice = False
+            try:
+                db.session.commit()
+            except:
+                error = "Exercises can not be saved."
+        flash(f"{len(ids)} exercises are not available for practice from now on.")
 
 class VariableView(BaseView):
     column_list = ('name', 'description', 'category')
@@ -319,7 +424,6 @@ class HomeView(BaseView):
 with warnings.catch_warnings():
     warnings.filterwarnings(
         'ignore', 'Fields missing from ruleset', UserWarning)
-    print("Adding views")
     admin.add_view(UserView(User, db.session))
     admin.add_view(ExerciseView(Exercise, db.session))
     admin.add_view(QuestionView(Question, db.session))

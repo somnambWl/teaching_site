@@ -26,22 +26,25 @@ def index():
     """
     Define all variables 
     """
-    exercises_all = Exercise.query.all()
-    exercises = []
     # If admin is logged in show all exercises
-    if 'is_admin' in session and session['is_admin']:
-        exercises = exercises_all
-    else:   # If casual user is logged in show only active exercises
-        for i, exercise in enumerate(exercises_all):
-            print(f"Exercise: {exercise}")
-            print(f"{exercise.open_date < datetime.now()} and {exercise.active}")
-            if exercise.open_date < datetime.now() and exercise.active:
-                    exercises.append(exercise)
+#    if 'is_admin' in session and session['is_admin']:
+    exercises = Exercise.query.filter(Exercise.active).all()
+#    else:   # If casual user is logged in show only active exercises
+#        exercises = Exercise.query.filter(Exercise.open_date<datetime.now())\
+#                .filter(Exercise.active==True)
+#        for i, exercise in enumerate(exercises_all):
+#            print(f"Exercise: {exercise}")
+#            print(f"{exercise.open_date < datetime.now()} and {exercise.active}")
+#            if exercise.open_date < datetime.now() and exercise.active:
+#                    exercises.append(exercise)
     eid = [e.id for e in exercises]
     nq = [len(e.questions) for e in exercises]
     enames = [e.name for e in exercises]
     dates = [e.close_date for e in exercises]
-    kwargs = {'eid': eid, 'nq': nq, 'enames': enames, 'dates': dates}
+    scored = [e.scored for e in exercises]
+    practice = [e.practice for e in exercises]
+    kwargs = {'eid': eid, 'nq': nq, 'enames': enames, 'dates': dates,
+            "scored": scored, "practice": practice}
     return render_template('home/index.html', **kwargs)
 
 @app.route('/profile')

@@ -14,11 +14,29 @@ question_exercise = db.Table('question_exercise',
 # Normal tables
 
 class Exercise(db.Model):
+    """
+    Database model for exercises
+    
+    Attributes
+    ----------
+    id: Integer
+    name: String(100)
+    open_data: DateTime
+    close_date: DateTime
+    scored: Boolean
+        Whether the exercise will be scored after 'close_data'
+    active: Boolean
+        Is the exercise prepared?
+    practice: Boolean
+        Whether the exercise is enabled for practicing and training.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     open_date = db.Column(db.DateTime, nullable=False)
     close_date = db.Column(db.DateTime, nullable=False)
-    active = db.Column(db.Boolean, default=True)
+    scored = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=False)
+    practice = db.Column(db.Boolean, default=False)
     questions = db.relationship('Question', secondary=question_exercise,
             backref=db.backref('exercises', lazy='dynamic'))
 
