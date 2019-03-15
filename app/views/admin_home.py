@@ -8,7 +8,7 @@ from app.common.tables import create_summary_table
 
 class HomeView(AdminIndexView):
     """
-
+    Home view for admin - summary table.
     """
 
     @expose('/')

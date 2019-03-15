@@ -183,21 +183,6 @@ class QuestionView(BaseView):
                  (Variable.correct_question==None) &\
                  (Variable.wrong_question==None)))
 
-    #def on_model_change(self, form, Question):
-    #    """
-    #    ???
-    #    """
-    #    msg = '"answer command" and "correct/wrong options" conflict'
-    #    if form.answer_command.data:
-    #        if form.correct_variable.data or form.wrong_variable.data:
-    #            flash(msg)
-    #            Question.correct_option = None
-    #            Question.wrong_option = None
-    #            Question.answer_command = None
-    #    else:
-    #        if not form.correct_variable.data or not form.wrong_variable.data:
-    #            Question.no_answer = True
-
     column_list = ('name', 'body', 'no_answer')
     column_formatters = {'name': _question_formatter,}
     column_labels = {
@@ -212,12 +197,7 @@ class QuestionView(BaseView):
             'text_variables', 'answer_units', 'correct_variable', 
             'wrong_variable', 'no_answer')
 
-
-
 class ExerciseView(BaseView):
-    """
-
-    """
     
     def _exercise_formatter(view, context, model, name):
         if model.name:
@@ -342,16 +322,8 @@ class VariableView(BaseView):
             'constraint', 'units', 'question',
             'correct_question', 'wrong_question')
 
-    #def on_model_change(self, form, Variable):
-    #    print("Causes error")
-    #    if '_' in form.name.data:
-    #        flash('charactor "_" is reserved of operation, removing it')
-    #        Variable.name = form.name.data.replace('_', '')
-
 class SheetView(BaseView):
-    """
-
-    """
+    
     def _point_formatter(view, context, model, name):
         if type(model.point) is float:
             url = url_for('reevaluate', id=model.id)
@@ -363,7 +335,8 @@ class SheetView(BaseView):
             'user': {'fields': (User.fullname,)},
             'exercise': {'fields': (Exercise.name,)},
             'question': {'fields': (Question.name,)}}
-    column_searchable_list = ('user.fullname', 'exercise.name', 'question.name')
+    column_searchable_list = ('user.fullname', 'exercise.name',
+            'question.name')
 
     @action("reevaluate", "Reevaluate", "Reevaluate selected sheets?")
     def action_reevaluate(self, ids):
@@ -394,7 +367,6 @@ class SheetView(BaseView):
                 error = "Deevaluated sheet can not be saved."
         flash(f"{len(ids)} sheets deevaluated")
 
-
 class UnitView(BaseView):
     column_list = ('name', 'fullname', 'face', 'SI_value', 'category.name')
     column_searchable_list = ('name', 'fullname', 'category.name')
@@ -416,11 +388,6 @@ class UnitCategoryView(BaseView):
             'cd': 'candela (cd)',}
     form_rules = ('name', 'm', 'kg', 's', 'A', 'K', 'mol', 'cd')
 
-class HomeView(BaseView):
-    """
-
-    """
-
 with warnings.catch_warnings():
     warnings.filterwarnings(
         'ignore', 'Fields missing from ruleset', UserWarning)
@@ -433,19 +400,7 @@ with warnings.catch_warnings():
     admin.add_view(UnitView(Unit, db.session))
     admin.add_view(UnitCategoryView(UnitCategory, db.session))
 
-#admin.add_view(UserView(User, db.session))
-
-# Basic views
-#admin.add_view(ModelView(User, db.session))
-#admin.add_view(ModelView(Exercise, db.session))
-#admin.add_view(ModelView(Question, db.session))
-#admin.add_view(ModelView(QuestionCategory, db.session))
-#admin.add_view(ModelView(Variable, db.session))
-#admin.add_view(ModelView(Sheet, db.session))
-#admin.add_view(ModelView(Unit, db.session))
-#admin.add_view(ModelView(UnitCategory, db.session))
-
-
 admin.add_link(MenuLink(name='Home', category='Links', url='/index'))
 admin.add_link(MenuLink(name='Logout', category='Links', url='/logout'))
-admin.add_link(MenuLink(name='Re-evaluate all', category='Links', url='/reevaluate'))
+admin.add_link(MenuLink(name='Re-evaluate all', category='Links',
+        url='/reevaluate'))

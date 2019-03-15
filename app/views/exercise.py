@@ -60,11 +60,7 @@ def render(id, seed=None):
 @login_required
 def exercise(id=None):
     seed = request.args.get("seed", None)
-    print(f"Initial seed: {seed}")
     practice = request.args.get("practice", False)
-#    practice2 = request.form.get("practice", False)
-#    print(f"Args practice: {practice}")
-#    print(f"Form practice: {practice2}")
     if practice == "True":
         practice = True
     elif practice == "False":
@@ -119,13 +115,7 @@ def exercise(id=None):
     kwargs['question_list'] = question_list
     flash_date = False
     # Now cycle through questions
-#    print("Questions info")
-#    for i, question in enumerate(question_list):
-#        print(i, question)
     for i, question in enumerate(question_list):
-#        print()
-#        print(f"{i}-th question {question}")
-#        print()
         ans_msg = ""
         status = ""
         if not practice:   # If the exercise is not for practise
@@ -167,63 +157,36 @@ def exercise(id=None):
                 pass
         # Create a formular for a single question
         name = f'form-{i}'
-#        print(f"Form {name}")
         form = QuestionForm(
                 exercise_id = exercise.id,
                 question_id = question.id,
                 user_id = user.id,
                 prefix = name,
                 obj = sheet)
-        #form = QuestionForm()
         forms.append(form)
         if (now > exercise.open_date and now < exercise.close_date) \
                 or practice and not submitted:
-#            print("1st condition")
             if not submitted:
                 kwargs['readonly'] = False
-#            print(dir(form))
-#            print(f"form.validate_on_submit() == {form.validate_on_submit()}")
-#            print(f"question.no_answer == {question.no_answer}")
             if form.validate_on_submit() and not question.no_answer:
-#                print("2nd condition")
                 if 'submit' in list(request.form.keys()):
                     submit = True
                     kwargs['readonly'] = True
                 answer = question.substitute_variables(seed)
                 if type(answer) is float:   # Question with float answer
-                    #print("3rd condition")
-                    # Error with saving and submitting is here
-                    #print("REQUEST")
-                    #print(dir(request))
-                    #print()
-                    #print("REQUEST.FORM")
-                    #print(request.form)
-                    #print(form)
-                    #print(dir(form))
-                    #print(form.number)
-                    #print(form.exercise_id)
                     sheet.number = form.number.data
-                    #print(f"For answer {answer} the float answer is {sheet.number}")
                 elif len(answer) > 1:   # Multiple choice question
-#                    print("Multiple choice question")
                     sheet.option1 = form.option1.data
                     sheet.option2 = form.option2.data
                     sheet.option3 = form.option3.data
                     sheet.option4 = form.option4.data
                     sheet.option5 = form.option5.data
                 else:
-#                    print("Last type of question")
                     rname = f"radio_{question.id}"
                     try:
-#                        print("Inside of try")
-#                        print(f"rname: {rname}")
-#                        print(f"request.form[{rname}]: {request.form[rname]}")
-#                        print(f"request.form[{rname}].split('_'): {request.form[rname].split('_')}")
                         ans = int(request.form[rname].split('_')[-1])
                     except:
-#                        print("Inside of expect")
                         ans = -1
-#                    print(f"Answer is {ans}")
                     question._options = [False for _ in range(5)]
                     sheet.option1 = False 
                     sheet.option2 = False 
@@ -344,7 +307,6 @@ def exercise(id=None):
                flashed = True
         status_list.append(status)
         ans_msgs.append(ans_msg)
-#    print("End of cycle through questions")
     # End of cycle through questions
     # Prepare the output
     kwargs['status_list'] = status_list
@@ -354,9 +316,6 @@ def exercise(id=None):
     kwargs['error'] = error
     kwargs['seed'] = seed
     kwargs['practice'] = practice
-    print(f"Final seed: {seed}")
-#    print("KWARGS")
-#    print(kwargs)
     return render_template('exercise/render.html', **kwargs)
 
 def get_questions(exercise, seed):

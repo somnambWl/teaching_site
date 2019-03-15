@@ -27,16 +27,7 @@ def index():
     Define all variables 
     """
     # If admin is logged in show all exercises
-#    if 'is_admin' in session and session['is_admin']:
     exercises = Exercise.query.filter(Exercise.active).all()
-#    else:   # If casual user is logged in show only active exercises
-#        exercises = Exercise.query.filter(Exercise.open_date<datetime.now())\
-#                .filter(Exercise.active==True)
-#        for i, exercise in enumerate(exercises_all):
-#            print(f"Exercise: {exercise}")
-#            print(f"{exercise.open_date < datetime.now()} and {exercise.active}")
-#            if exercise.open_date < datetime.now() and exercise.active:
-#                    exercises.append(exercise)
     eid = [e.id for e in exercises]
     nq = [len(e.questions) for e in exercises]
     enames = [e.name for e in exercises]

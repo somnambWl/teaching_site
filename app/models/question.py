@@ -441,26 +441,18 @@ class Question(db.Model):
             return self.name
 
     def render(self, seed, options=5):
-#        print("RENDERING")
         seed = int(seed) + int(self.id)
         rs = np.random.RandomState(seed)
-#        print(self.text_variables.all())
         text = self.body
-#        print(text)
         for i in range(len(self.text_variables.all())):
             var = self.text_variables[i]
-            #print(type(var))
-            #print(dir(var))
-#            print(f"Replacing _{var.name}_ with {var.render(seed+i)}")
             text = text.replace(f"_{var.name}_", f"{var.render(seed+i)}") 
-#        print(text)
         if self.answer_units:
             unit_rs = np.random.RandomState(seed+1)
             unit = unit_rs.choice(self.answer_units)
             pattern = '_unit_'
             face = unit.get_face()
             text = text.replace(pattern, face)
-#        print(text)
         option_list = []
         if self.correct_variable and self.wrong_variable:
             option_list = []
@@ -488,22 +480,13 @@ class Question(db.Model):
         rs = np.random.RandomState(qseed)   # Initialize random state
         if self.answer_command:
             answer = self.answer_command
-#            print("Answer before substitution")
-#            print(answer)
             # Replace every variable with a random value
             for i in range(len(self.text_variables.all())):
                 var = self.text_variables[i]
-#                print(f"Variable is {var}")
-#                print(f"Variable name is {var.name}")
                 name = f"_{var.name}_"
                 answer = answer.replace(name, str(var.value(qseed+i)))
-#                print(f"Replaced {name} with {var.value(qseed+i)}")
-#                print(answer)
-#            print("Answer after substitution")
-#            print(answer)
             try:
                 a = parse_expr(answer)
-#                print(f"A: {a}")
                 SI_answer = float(parse_expr(answer))
             except TypeError:
                 print("ERROR: At models/question.py-Question.evaluate")
@@ -516,16 +499,10 @@ class Question(db.Model):
                         " saved, please report to system administrator.")
                 SI_answer = "ERROR!"
             # If the answer require units, add units to the answer.
-#            print(f"self.answer_units: {self.answer_units}")
             if self.answer_units:
-#                print("Answer has units")
                 unit_rs = np.random.RandomState(qseed+1)
-#                print(f"unit_rs: {unit_rs}")
                 unit = unit_rs.choice(self.answer_units)
-#                print(f"unit: {unit}")
-#                print(f"SI_answer before: {SI_answer}")
                 SI_answer = unit.from_SI(SI_answer)
-#                print(f"SI_answer after: {SI_answer}")
             return SI_answer
         else:
             answer_list = []

@@ -45,7 +45,7 @@ def login():
                     or form.password.data == user.password_tmp:
                 # set session variable username when login
                 msg = f"{datetime.now().strftime('%Y/%m/%d-%H:%M:%S')}: " \
-                        "{user.username} logged in from {request.remote_addr}."
+                        f"{user.username} logged in from {request.remote_addr}."
                 app.logger.info(msg)
                 msg = f"{user.username}-agent: {getattr(request, 'user_agent')}"
                 app.logger.info(msg)
@@ -83,11 +83,9 @@ def register():
         # Convert password to hashed password
         salt = bcrypt.gensalt()
         hashedpw = bcrypt.hashpw(form.password.data, salt)
-
         #OldTODO check register list
         #OldTODO check admin
         #OldTODO get random seed
-        
         # Load data from formular to User class
         is_admin = False
         validated = False
@@ -114,7 +112,7 @@ def register():
             db.session.add(user_new)
             db.session.flush()
         except:   # Username was taken, so try registration once again
-            error = "Username {user_new.username} is already taken."
+            error = f"Username {user_new.username} is already taken."
             return render_template('user/register.html', 
                     form=form, error=error)
         # Nor email address nor username were used, finalize saving to the
@@ -172,8 +170,8 @@ def lost_password():
     if form.validate_on_submit():
         user = User.query.filter_by(email = form.email.data).first()
         msg = f"{datetime.now().strftime('%Y/%m/%d-%H:%M:%S')}: request for" \
-                " lost password reset for email: {user.email}" \
-                ", from IP: {request.remote_addr}"
+                f" lost password reset for email: {user.email}" \
+                f", from IP: {request.remote_addr}"
         app.logger.warning(msg)
         if user:
             if user.validated:
@@ -184,7 +182,7 @@ def lost_password():
                 db.session.commit()
                 title = 'Reset password'
                 body = f"Hi {user.fullname}, \n\n" \
-                        "Your temporary password is: {password_new}\n"
+                        f"Your temporary password is: {password_new}\n"
                 send_email(user.email, title, body)
             flash('Inscruction has been sent')
         flash('No email found')
@@ -220,13 +218,12 @@ def user_setting():
                 db.session.commit()
                 flash('User data updated')
                 msg = f"{datetime.now().strftime('%Y/%m/%d-%H:%M:%S')}:"\
-                        " user update for email: {user.email}" \
-                        ", new username: {user.username}"
+                        f" user update for email: {user.email}" \
+                        f", new username: {user.username}"
                 app.logger.warning(msg)
             except:
                 error = f'New username {form.username.data} is already taken.'
         return render_template('user/user_setting.html', 
-            form=form, error=error, user=user
-        )
+                form=form, error=error, user=user)
     else:
         return redirect(url_for('validate'))

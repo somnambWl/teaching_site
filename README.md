@@ -30,10 +30,12 @@ To create all of this, you have to log in as an admin.
 
 Variables has following properties:
 
-- Category - Integer, Float, String
+- Category - Integer, Float, String, Unit
 - Variable name - You have to name variable somehow and refer to it later with this name
 - Variable description - Arbitrary description seen only by other admins
-- Constraint - Can be a range, or a list
+- Constraint - Can be a range (for floats), or a list (for ints)
+
+Currently only a single Variable can be assigned to a single Question. 
 
 ## How to create a Question
 

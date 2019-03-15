@@ -16,6 +16,10 @@ def create_summary_table():
     """
     Create a summary table (DataFrame) from database for admin's home.
 
+    Summary table consists of enrolled students who already submitted active
+    exercises. Students are rows of table, exercises are columns of table.
+    The data in the table are sums of points per student per exercise.
+
     Returns
     -------
     pandas.DataFrame:
@@ -27,10 +31,6 @@ def create_summary_table():
             .filter(User.enrolled==True)\
             .filter(Exercise.scored==True)\
             .group_by(User.fullname, Exercise.name)
-    #print("SQL statement")
-    #print(sql.statement)
-    #print("SQL data")
-    #print(sql.all())
     try:
         df = pd.read_sql(sql.statement, db.session.bind)
         df = df.pivot_table(values='sum_1', index="fullname", columns="name")
