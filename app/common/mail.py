@@ -14,4 +14,4 @@ def send_email(recipients, title, body):
             recipients = recipients)
     msg.body = body
     print(body)
-    #mail.send(msg)
+    mail.send(msg)

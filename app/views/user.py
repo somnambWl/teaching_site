@@ -33,12 +33,13 @@ def login():
                     # Encrypt password
                     # (In the database there are only hashed passwords,
                     #  so we need to encrypt it everytime the same way)
-                    password_in = bcrypt.hashpw(form.password.data, 
+                    password_in = bcrypt.hashpw(
+                            form.password.data.encode("utf8"), 
                             user.password)
                 except TypeError:
                     password_in = ''
             else:
-                password_in = form.password.data
+                password_in = form.password.data.encode("utf8")
             # If the password hash matches the one in the database or the
             # temporary one:
             if password_in == user.password \
@@ -82,7 +83,7 @@ def register():
     if form.validate_on_submit():
         # Convert password to hashed password
         salt = bcrypt.gensalt()
-        hashedpw = bcrypt.hashpw(form.password.data, salt)
+        hashedpw = bcrypt.hashpw(form.password.data.encode("utf8"), salt)
         #OldTODO check register list
         #OldTODO check admin
         #OldTODO get random seed
@@ -185,7 +186,7 @@ def lost_password():
                         f"Your temporary password is: {password_new}\n"
                 send_email(user.email, title, body)
             flash('Inscruction has been sent')
-        flash('No email found')
+        #flash('No email found')
     return render_template('user/lost.html', form=form)
 
 @app.route('/logout')
@@ -207,7 +208,7 @@ def user_setting():
         error = ''
         if form.validate_on_submit():
             salt = bcrypt.gensalt()
-            hashedpw = bcrypt.hashpw(form.password.data, salt)
+            hashedpw = bcrypt.hashpw(form.password.data.encode("utf8"), salt)
             if user.username != form.username.data:
                 user.username = form.username.data
                 session['username'] = user.username
