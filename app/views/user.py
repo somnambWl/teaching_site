@@ -27,7 +27,7 @@ def login():
     if form.validate_on_submit():   # After submission of login formular
         # Search for user with submitted username
         user = User.query.filter_by(username=form.username.data).first()
-        if user:   # If the user does exist
+        if user:   # If the user exists
             if user.password != '':   # Check if password was submitted
                 try:
                     # Encrypt password

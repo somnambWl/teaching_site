@@ -90,8 +90,10 @@
 		{% else %} <!-- Question with numerical answer -->
 			{{ render_field(formular.number, class='form-control', disabled=readonly) }}
 		{% endif%}
-		{% if ans_msgs %} <!-- Question with plaintext answer -->
-			<p class={{status}}>{{ ans_msg }}</p>
+		{% if show_messages is sameas true %}
+			{% if ans_msgs %} <!-- Question with plaintext answer -->
+				<p class={{status}}>{{ ans_msg }}</p>
+			{% endif %}
 		{% endif %}
 	{% endfor %} <!-- End of FOR cycle through question list -->
 	<hr>

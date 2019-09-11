@@ -99,7 +99,8 @@ def exercise(id=None):
         else:
             msg += 'Not visible exercise'
         flash(msg)
-    kwargs = {'exercise': exercise, 'id': id, 'readonly': True}
+    kwargs = {'exercise': exercise, 'id': id, 'readonly': True,
+            "show_messages":True}
     if seed is None and practice is True:
         seed = random.randint(1,10000)
     if seed is None:
@@ -166,6 +167,8 @@ def exercise(id=None):
         forms.append(form)
         if (now > exercise.open_date and now < exercise.close_date) \
                 or practice and not submitted:
+            if not practice and now < exercise.close_date:
+                kwargs["show_messages"] = False
             if not submitted:
                 kwargs['readonly'] = False
             if form.validate_on_submit() and not question.no_answer:
@@ -279,6 +282,8 @@ def exercise(id=None):
             except:
                 pass
         if now > exercise.close_date or practice or submit or submitted:
+            if now > exercise.close_date:
+                kwargs['readonly'] = True
             if not question.no_answer:
                 commit = True
                 if practice or submitted:
