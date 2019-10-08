@@ -368,7 +368,7 @@ class Variable(db.Model):
     def get_list(self):
         assert hasattr(self, 'constraint')
         c = ast.literal_eval(self.constraint)
-        #print(f"c: {c}")
+        print(f"c: {c}")
         assert type(c) is list
         return c
 

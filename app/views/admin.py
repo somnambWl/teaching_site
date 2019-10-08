@@ -5,6 +5,8 @@ from random import choice
 import string
 import warnings
 
+from flask import render_template
+
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.base import MenuLink
 from flask import redirect, session, url_for, flash
@@ -337,6 +339,7 @@ class SheetView(BaseView):
             'question': {'fields': (Question.name,)}}
     column_searchable_list = ('user.fullname', 'exercise.name',
             'question.name')
+    #edit_template = 'admin/sheet_edit.html'
 
     @action("reevaluate", "Reevaluate", "Reevaluate selected sheets?")
     def action_reevaluate(self, ids):
@@ -366,6 +369,23 @@ class SheetView(BaseView):
             except:
                 error = "Deevaluated sheet can not be saved."
         flash(f"{len(ids)} sheets deevaluated")
+
+    @action("showquestion", "Show Question", "Show question")
+    def show_question(self, ids):
+        for id in ids:
+            sheet = Sheet.query.filter_by(id=id).first()
+            user = User.query.filter_by(id=sheet.user_id).first()
+            question = Question.query.filter_by(id=sheet.question_id).first()
+            flash(f"Question text is following: {question.body}")
+            answer = question.substitute_variables(user.random_seed)
+            try:
+                flash(f"Correct answer constraints are: {question.correct_variable.constraint}")
+            except AttributeError:
+                pass
+            flash(f"Correct answer is: {answer}")
+
+    #def create_view(self):
+    #    return self.render('admin/sheet_edit.html')
 
 class UnitView(BaseView):
     column_list = ('name', 'fullname', 'face', 'SI_value', 'category.name')

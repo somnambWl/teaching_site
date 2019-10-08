@@ -13,7 +13,8 @@ from flask_migrate import Migrate
 from flask_mail import Mail, Message
 
 # Create the core app
-app = Flask(__name__)
+print(__name__)
+app = Flask(__name__, template_folder="templates/")
 # Read global configuration file
 app.config.from_object('config')
 try:
